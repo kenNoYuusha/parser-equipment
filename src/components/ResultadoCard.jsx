@@ -64,7 +64,7 @@ const ResultadoCard = ({ resultado }) => {
             </div>
             
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <DataField label="Marketing Code" value={letraMercadeo} />
+              <DataField label="Marketing Code" value={letraMercadeo?.toUpperCase()} />
               <DataField label="Model ID" value={modelo} highlight />
               <DataField label="Production Date" value={fechaFormateada} subValue={`Raw Code: ${fecha}`} highlight />
               <DataField label="Correlative" value={correlativo} />
@@ -96,7 +96,12 @@ const ResultadoCard = ({ resultado }) => {
                   </div>
                   <div>
                     <span className="text-[10px] uppercase tracking-[0.2em] text-dark/40 block mb-1 font-bold">Model</span>
-                    <a className="text-primary text-sm font-bold" target="_blank" rel="noopener noreferrer" href={`https://egopowerplus.com/catalogsearch/result/?q=${datosComerciales.model_na}`}>{isRefurbished ? `${datosComerciales.model_na}-FC` : datosComerciales.model_na}</a>
+                    <a className="text-primary text-sm font-bold inline-flex items-center gap-1 hover:underline" target="_blank" rel="noopener noreferrer" href={`https://egopowerplus.com/catalogsearch/result/?q=${datosComerciales.model_na}`}>
+                      {isRefurbished ? `${datosComerciales.model_na}-FC` : datosComerciales.model_na}
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
                   </div>
                 </div>
               </div>

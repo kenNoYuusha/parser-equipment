@@ -69,7 +69,7 @@ const Buscador = () => {
         <div className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-bold rounded-full mb-6 uppercase tracking-[0.2em] border border-primary/20">
           Batch Processing System
         </div>
-        <h1 className="text-5xl md:text-6xl text-dark mb-6">
+        <h1 className="text-2xl md:text-4xl text-dark mb-6">
           Serial Verification
         </h1>
         <p className="text-dark/50 text-xl max-w-2xl mx-auto leading-relaxed font-lato">
@@ -147,10 +147,10 @@ const Buscador = () => {
               key={i} 
               className={`p-3 border rounded-xl animate-in zoom-in-90 transition-all duration-300 ${containerClasses}`}
             >
-              <span className={`block text-[8px] uppercase tracking-widest font-bold mb-1 font-lato ${labelClasses}`}>
+              <span className={`block text-xs uppercase tracking-widest font-bold mb-1 font-lato ${labelClasses}`}>
                 Row #{p.index + 1}
               </span>
-              <span className="block text-dark font-bold text-xs truncate font-fjalla uppercase">
+              <span className="block text-dark text-md truncate font-fjalla uppercase">
                 {modelDisplay}
               </span>
             </div>
