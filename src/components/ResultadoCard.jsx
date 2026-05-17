@@ -15,6 +15,7 @@ const ResultadoCard = ({ resultado }) => {
     letraMercadeo, 
     modelo, 
     fecha, 
+    fechaFormateada,
     correlativo, 
     datosComerciales 
   } = resultado;
@@ -65,7 +66,7 @@ const ResultadoCard = ({ resultado }) => {
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <DataField label="Marketing Code" value={letraMercadeo} />
               <DataField label="Model ID" value={modelo} highlight />
-              <DataField label="Manufacture Date" value={fecha} />
+              <DataField label="Production Date" value={fechaFormateada} subValue={`Raw Code: ${fecha}`} highlight />
               <DataField label="Correlative" value={correlativo} />
             </dl>
           </div>
@@ -109,10 +110,11 @@ const ResultadoCard = ({ resultado }) => {
   );
 };
 
-const DataField = ({ label, value, highlight = false }) => (
+const DataField = ({ label, value, subValue, highlight = false }) => (
   <div className="bg-light/50 p-3 rounded-xl border border-dark/5">
     <dt className="text-[10px] uppercase tracking-widest text-dark/40 font-bold mb-1">{label}</dt>
     <dd className={`text-sm font-bold ${highlight ? 'text-primary' : 'text-dark/80'}`}>{value}</dd>
+    {subValue && <dd className="text-[9px] text-dark/30 mt-1 uppercase font-medium font-lato">{subValue}</dd>}
   </div>
 );
 

@@ -1,5 +1,6 @@
 import Papa from 'papaparse';
 import descomponerNumeroSerie from '../utils/parseador';
+import { formatearFechaSerial } from '../utils/conversorFechas';
 
 // URL de Google Sheets (formato TSV/CSV)
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ74YRCmDIVupviaj7YYegoaOHlN3Db0DvWZri0CpjheobakvnFt0rnFV4OEXWVtZkIDoww3SBav5oy/pub?gid=0&single=true&output=tsv";
@@ -52,13 +53,15 @@ export const enriquecerNumeroSerie = (numeroSerie, diccionarioModelos) => {
   
   // Si no hay diccionario aún o el análisis falló estructuralmente
   if (!diccionarioModelos || !analizado.valido) {
-    return { ...analizado, datosComerciales: null };
+    return { ...analizado, datosComerciales: null, fechaFormateada: "Invalid Date" };
   }
 
   const datosComerciales = diccionarioModelos[analizado.modelo] || null;
+  const fechaFormateada = formatearFechaSerial(analizado.fecha);
 
   return {
     ...analizado,
-    datosComerciales
+    datosComerciales,
+    fechaFormateada
   };
 };
