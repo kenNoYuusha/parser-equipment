@@ -1,87 +1,156 @@
 import React, { useState } from 'react';
 import { useModels } from '../hooks/useModels';
-import ResultadoCard from './ResultadoCard';
+import FilaBusqueda from './FilaBusqueda';
+import ModalDetalles from './ModalDetalles';
 
 /**
- * Componente Buscador: Orquestador de la lógica de búsqueda y visualización.
- * Rediseñado con Tailwind CSS y UX mejorada.
+ * Componente Buscador: Refactorizado para procesamiento por lotes (Batch).
  */
 const Buscador = () => {
-  const { diccionarioModelos, cargando, error, enriquecerNumeroSerie } = useModels();
-  const [inputValue, setInputValue] = useState('');
-  const [resultado, setResultado] = useState(null);
+  const { 
+    cargando, 
+    error, 
+    productosAnalizados, 
+    actualizarProductoAnalizado, 
+    eliminarProductoAnalizado,
+    resetearProductosAnalizados 
+  } = useModels();
+  
+  const [listaSeries, setListaSeries] = useState([""]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [itemSeleccionado, setItemSeleccionado] = useState(null);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (!inputValue.trim()) return;
+  const handleInputChange = (index, valor) => {
+    const nuevaLista = [...listaSeries];
+    nuevaLista[index] = valor;
+    setListaSeries(nuevaLista);
+    actualizarProductoAnalizado(index, valor);
+  };
 
-    const dataEnriquecida = enriquecerNumeroSerie(inputValue, diccionarioModelos);
-    setResultado(dataEnriquecida);
+  const agregarFila = () => {
+    if (listaSeries.length < 5) {
+      setListaSeries([...listaSeries, ""]);
+    }
+  };
+
+  const eliminarFila = (index) => {
+    if (index === 0 && listaSeries.length === 1) return;
+    
+    const nuevaLista = listaSeries.filter((_, i) => i !== index);
+    setListaSeries(nuevaLista);
+    eliminarProductoAnalizado(index);
+  };
+
+  const resetearTodo = () => {
+    setListaSeries([""]);
+    resetearProductosAnalizados();
+  };
+
+  const abrirDetalles = (index) => {
+    const producto = productosAnalizados[index];
+    if (producto && producto.valido) {
+      setItemSeleccionado(producto.resultadoCompleto);
+      setModalOpen(true);
+    }
   };
 
   if (cargando) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 font-lato">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-dark/70 font-medium">Cargando base de datos comercial...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-2xl mx-auto mt-10 p-6 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
-        <div className="flex items-center space-x-3">
-          <span className="text-2xl">⚠️</span>
-          <div>
-            <h3 className="text-red-800 font-bold uppercase tracking-tight">Error de Conexión</h3>
-            <p className="text-red-700">{error}</p>
-          </div>
-        </div>
+        <p className="text-dark/70 font-medium">Synchronizing Commercial Database...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <header className="text-center mb-12">
-        <div className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full mb-4 uppercase tracking-widest">
-          Analizador de Hardware
+    <div className="max-w-4xl mx-auto px-4">
+      <header className="text-center mb-16 animate-in fade-in duration-700">
+        <div className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-bold rounded-full mb-6 uppercase tracking-[0.2em] border border-primary/20">
+          Batch Processing System
         </div>
-        <h1 className="text-4xl md:text-5xl text-dark mb-4">
-          Sistema de Verificación
+        <h1 className="text-5xl md:text-6xl text-dark mb-6">
+          Serial Verification
         </h1>
-        <p className="text-dark/60 text-lg max-w-xl mx-auto leading-relaxed">
-          Ingrese el número de serie para obtener el análisis técnico y comercial detallado del equipo.
+        <p className="text-dark/50 text-xl max-w-2xl mx-auto leading-relaxed font-lato">
+          Perform multiple hardware analysis simultaneously. Add up to 5 serial numbers for batch processing.
         </p>
       </header>
 
-      <form 
-        onSubmit={handleSearch} 
-        className="relative group max-w-2xl mx-auto mb-16 transition-all duration-300"
-      >
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-grow">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ej: MJK15181500001X"
-              className="w-full px-6 py-4 bg-white border-2 border-dark/10 rounded-xl focus:border-primary outline-none transition-all text-lg placeholder:text-dark/30 shadow-sm group-hover:shadow-md"
+      <div className="bg-white/40 backdrop-blur-sm p-6 md:p-10 rounded-[2.5rem] border border-dark/5 shadow-inner mb-12">
+        <div className="space-y-2">
+          {listaSeries.map((serie, index) => (
+            <FilaBusqueda
+              key={index}
+              index={index}
+              value={serie}
+              onChange={handleInputChange}
+              onOpenDetails={abrirDetalles}
+              onDelete={eliminarFila}
+              isValid={productosAnalizados[index]?.valido || false}
             />
-          </div>
-          <button 
-            type="submit" 
-            className="px-8 py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-primary/30 active:scale-[0.98] whitespace-nowrap uppercase tracking-wide"
+          ))}
+        </div>
+
+        {/* Acciones de Grupo */}
+        <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
+          <button
+            onClick={agregarFila}
+            disabled={listaSeries.length >= 5}
+            className={`w-full sm:w-auto flex items-center justify-center space-x-3 px-8 py-4 rounded-2xl font-bold uppercase tracking-widest transition-all shadow-lg ${
+              listaSeries.length < 5
+                ? 'bg-dark text-white hover:bg-dark/90 hover:scale-[1.02] active:scale-[0.98]'
+                : 'bg-dark/10 text-dark/30 cursor-not-allowed shadow-none border border-dark/5'
+            }`}
           >
-            Analizar Serial
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            <span>Add Row ({listaSeries.length}/5)</span>
+          </button>
+
+          <button
+            onClick={resetearTodo}
+            className="w-full sm:w-auto flex items-center justify-center space-x-3 px-8 py-4 bg-white border-2 border-dark/10 text-dark/60 rounded-2xl font-bold uppercase tracking-widest hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all active:scale-[0.98]"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Reset All</span>
           </button>
         </div>
-      </form>
-
-      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <ResultadoCard resultado={resultado} />
       </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+        {productosAnalizados.filter(p => p?.valido).map((p, i) => {
+          const isRefurb = p.resultadoCompleto?.isRefurbished;
+          return (
+            <div 
+              key={i} 
+              className={`p-3 border rounded-xl animate-in zoom-in-90 transition-all duration-300 ${
+                isRefurb 
+                  ? 'bg-orange-500/10 border-orange-500/20 shadow-sm shadow-orange-500/5' 
+                  : 'bg-primary/5 border-primary/10'
+              }`}
+            >
+              <span className={`block text-[8px] uppercase tracking-widest font-bold mb-1 font-lato ${
+                isRefurb ? 'text-orange-500/60' : 'text-primary/60'
+              }`}>
+                Row #{p.index + 1}
+              </span>
+              <span className="block text-dark font-bold text-xs truncate font-fjalla uppercase">
+                {isRefurb ? `${p.model_na}-FC` : p.model_na}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      <ModalDetalles 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        resultadoCompleto={itemSeleccionado} 
+      />
     </div>
   );
 };

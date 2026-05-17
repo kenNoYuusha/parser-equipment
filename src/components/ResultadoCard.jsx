@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * Componente presentacional para mostrar los resultados del análisis.
  * Rediseñado con Tailwind CSS para una visualización profesional.
- * Ajustado según requerimientos: serial en header, sin badge, sin footer, etiquetas en inglés.
+ * Ajustado para integrarse perfectamente en contenedores/modales.
  */
 const ResultadoCard = ({ resultado }) => {
   if (!resultado) return null;
@@ -22,7 +22,7 @@ const ResultadoCard = ({ resultado }) => {
 
   if (!valido) {
     return (
-      <div className="bg-red-50 border-2 border-red-200 p-6 rounded-2xl flex items-start space-x-4">
+      <div className="bg-red-50 border-2 border-red-200 p-6 rounded-2xl flex items-start space-x-4 m-4">
         <div className="bg-red-500 text-white p-2 rounded-lg">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -37,7 +37,7 @@ const ResultadoCard = ({ resultado }) => {
   }
 
   return (
-    <div className="bg-white border border-dark/5 rounded-3xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+    <div className="bg-white animate-in fade-in duration-500">
       {/* Header con Serial (izquierda) y Estatus Refurbished (derecha) */}
       <div className="bg-dark p-6 text-white flex justify-between items-center">
         <h2 className="text-2xl md:text-3xl text-primary mb-0 font-fjalla tracking-[0.1em] uppercase">

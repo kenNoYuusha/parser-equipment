@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { cargarDiccionarioModelos, enriquecerNumeroSerie } from '../services/fetchModels';
 
 /**
- * Hook personalizado para gestionar el estado de la base de datos de modelos.
- * @returns {Object} { diccionarioModelos, cargando, error, enriquecerNumeroSerie }
+ * Hook personalizado para gestionar el estado de la base de datos de modelos
+ * y el acumulador de productos analizados por lotes.
  */
 export const useModels = () => {
   const [diccionarioModelos, setDiccionarioModelos] = useState(null);
+  const [productosAnalizados, setProductosAnalizados] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
@@ -30,10 +31,65 @@ export const useModels = () => {
     return () => { isMounted = false; };
   }, []);
 
+  /**
+   * Actualiza o limpia un producto en el array acumulador basándose en su índice.
+   * @param {number} index - Posición en el array.
+   * @param {string} numeroSerie - Serial a analizar.
+   */
+  const actualizarProductoAnalizado = (index, numeroSerie) => {
+    setProductosAnalizados(prev => {
+      const nuevoEstado = [...prev];
+      
+      if (!numeroSerie.trim()) {
+        nuevoEstado[index] = { index, valido: false };
+        return nuevoEstado;
+      }
+
+      const datos = enriquecerNumeroSerie(numeroSerie, diccionarioModelos);
+
+      if (datos.valido && datos.datosComerciales) {
+        nuevoEstado[index] = {
+          index,
+          model_na: datos.datosComerciales.model_na,
+          correlativo: datos.correlativo,
+          valido: true,
+          resultadoCompleto: datos
+        };
+      } else {
+        nuevoEstado[index] = { index, valido: false };
+      }
+
+      return nuevoEstado;
+    });
+  };
+
+  /**
+   * Elimina un producto del acumulador.
+   * @param {number} index - Índice a eliminar.
+   */
+  const eliminarProductoAnalizado = (index) => {
+    setProductosAnalizados(prev => {
+      const nuevoEstado = prev.filter((_, i) => i !== index);
+      // Re-indexar para mantener coherencia visual en las mini-cards
+      return nuevoEstado.map((item, i) => ({ ...item, index: i }));
+    });
+  };
+
+  /**
+   * Limpia todos los resultados analizados.
+   */
+  const resetearProductosAnalizados = () => {
+    setProductosAnalizados([]);
+  };
+
   return {
     diccionarioModelos,
+    productosAnalizados,
     cargando,
     error,
+    actualizarProductoAnalizado,
+    eliminarProductoAnalizado,
+    resetearProductosAnalizados,
     enriquecerNumeroSerie
   };
 };
