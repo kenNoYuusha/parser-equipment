@@ -1,11 +1,22 @@
+import React from 'react';
+import Buscador from './components/Buscador';
+
+/**
+ * Punto de entrada de la aplicación.
+ * Estructura rediseñada con Tailwind CSS.
+ */
 function App() {
- 
   return (
-    <>
-     <p className='text-3xl font-bold underline'>Hola Parcer</p>
-     <p className="text-indigo-700  ">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ex facere pariatur dolore, hic aspernatur deleniti! Commodi pariatur sint officia, voluptates eos culpa natus inventore illo earum repudiandae similique eius vero.</p>
-    </>
-  )
+    <div className="min-h-screen bg-light selection:bg-primary selection:text-white">
+      <main className="container mx-auto px-4 py-12">
+        <Buscador />
+      </main>
+      
+      <footer className="mt-auto py-8 text-center text-dark/60 border-t border-dark/5 text-sm">
+        &copy; {new Date().getFullYear()} Parcer Equipment - Sistema de Análisis de Seriales
+      </footer>
+    </div>
+  );
 }
 
-export default App
+export default App;
