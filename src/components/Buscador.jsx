@@ -56,7 +56,7 @@ const Buscador = () => {
 
   if (cargando) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 font-lato">
+      <div className="flex flex-col items-center justify-center min-h-100 space-y-4 font-lato">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         <p className="text-dark/70 font-medium">Synchronizing Commercial Database...</p>
       </div>
@@ -124,22 +124,34 @@ const Buscador = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
         {productosAnalizados.filter(p => p?.valido).map((p, i) => {
           const isRefurb = p.resultadoCompleto?.isRefurbished;
+          const isDiscontinued = p.resultadoCompleto?.datosComerciales?.discontinued?.toUpperCase() === 'TRUE';
+          
+          let containerClasses = "bg-primary/5 border-primary/10";
+          let labelClasses = "text-primary/60";
+          
+          if (isRefurb && isDiscontinued) {
+            containerClasses = "bg-gradient-to-r from-red-500/30 to-orange-500/30 border-red-500/40 shadow-sm shadow-red-500/5";
+            labelClasses = "text-red-500/60";
+          } else if (isDiscontinued) {
+            containerClasses = "bg-red-500/10 border-red-500/20 shadow-sm shadow-red-500/5";
+            labelClasses = "text-red-500/60";
+          } else if (isRefurb) {
+            containerClasses = "bg-orange-500/10 border-orange-500/20 shadow-sm shadow-orange-500/5";
+            labelClasses = "text-orange-500/60";
+          }
+
+          const modelDisplay = (isRefurb) ? `${p.model_na}-FC` : p.model_na;
+
           return (
             <div 
               key={i} 
-              className={`p-3 border rounded-xl animate-in zoom-in-90 transition-all duration-300 ${
-                isRefurb 
-                  ? 'bg-orange-500/10 border-orange-500/20 shadow-sm shadow-orange-500/5' 
-                  : 'bg-primary/5 border-primary/10'
-              }`}
+              className={`p-3 border rounded-xl animate-in zoom-in-90 transition-all duration-300 ${containerClasses}`}
             >
-              <span className={`block text-[8px] uppercase tracking-widest font-bold mb-1 font-lato ${
-                isRefurb ? 'text-orange-500/60' : 'text-primary/60'
-              }`}>
+              <span className={`block text-[8px] uppercase tracking-widest font-bold mb-1 font-lato ${labelClasses}`}>
                 Row #{p.index + 1}
               </span>
               <span className="block text-dark font-bold text-xs truncate font-fjalla uppercase">
-                {isRefurb ? `${p.model_na}-FC` : p.model_na}
+                {modelDisplay}
               </span>
             </div>
           );

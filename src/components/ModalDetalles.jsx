@@ -26,7 +26,7 @@ const ModalDetalles = ({ isOpen, onClose, resultadoCompleto }) => {
       ></div>
 
       {/* Contenedor del Modal - Sin Padding y con overflow-hidden */}
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden">
+      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-4xl shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden">
         <ResultadoCard resultado={resultadoCompleto} />
       </div>
     </div>

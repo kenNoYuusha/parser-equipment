@@ -26,7 +26,8 @@ export const cargarDiccionarioModelos = async () => {
               acc[fila.model_id] = {
                 categoria: fila.category || 'No disponible',
                 producto: fila.product|| 'No disponible',
-                model_na: fila.model_na || 'No disponible'
+                model_na: fila.model_na || 'No disponible',
+                discontinued: fila.discontinued || 'false'
               };
             }
             return acc;

@@ -40,7 +40,7 @@ const ResultadoCard = ({ resultado }) => {
     <div className="bg-white animate-in fade-in duration-500">
       {/* Header con Serial (izquierda) y Estatus Refurbished (derecha) */}
       <div className="bg-dark p-6 text-white flex justify-between items-center">
-        <h2 className="text-2xl md:text-3xl text-primary mb-0 font-fjalla tracking-[0.1em] uppercase">
+        <h2 className="text-2xl md:text-3xl text-primary mb-0 font-fjalla tracking-widest uppercase">
           {codigoOriginal}
         </h2>
         
@@ -79,7 +79,12 @@ const ResultadoCard = ({ resultado }) => {
             </div>
 
             {datosComerciales ? (
-              <div className="bg-light p-5 rounded-2xl space-y-4 border border-dark/5">
+              <div className="bg-light p-5 rounded-2xl space-y-4 border border-dark/5 relative">
+                {datosComerciales.discontinued?.toUpperCase() === 'TRUE' && (
+                  <span className="absolute top-2 right-2 text-red-500 font-bold text-xs tracking-wider bg-red-50 px-2 py-0.5 rounded border border-red-200">
+                    DISCONTINUED
+                  </span>
+                )}
                 <div>
                   <span className="text-[10px] uppercase tracking-[0.2em] text-dark/40 block mb-1 font-bold">Product</span>
                   <span className="text-dark font-bold text-lg leading-tight block">{datosComerciales.producto}</span>

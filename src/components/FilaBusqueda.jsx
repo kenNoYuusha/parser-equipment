@@ -12,7 +12,7 @@ const FilaBusqueda = ({ index, value, onChange, onOpenDetails, onDelete, isValid
       </div>
 
       {/* Input de Serial */}
-      <div className="flex-grow relative">
+      <div className="grow relative">
         <input
           type="text"
           value={value}
