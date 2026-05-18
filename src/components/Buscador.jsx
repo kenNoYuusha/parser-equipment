@@ -75,14 +75,14 @@ const Buscador = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4">
-      <header className="text-center mb-16 animate-in fade-in duration-700">
-        <div className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-bold rounded-full mb-6 uppercase tracking-[0.2em] border border-primary/20">
+      <header className="text-center mb-10 animate-in fade-in duration-700">
+        <div className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-bold rounded-full mb-4 uppercase tracking-[0.2em] border border-primary/20">
           Batch Processing System
         </div>
-        <h1 className="text-5xl md:text-6xl text-dark mb-6">
+        <h1 className="text-3xl md:text-4xl text-dark mb-4 uppercase tracking-widest font-fjalla">
           Serial Verification
         </h1>
-        <p className="text-dark/50 text-xl max-w-2xl mx-auto leading-relaxed font-lato">
+        <p className="text-dark/50 text-base max-w-2xl mx-auto leading-relaxed font-lato">
           Perform multiple hardware analysis simultaneously. Add up to 5 serial numbers for batch processing.
         </p>
       </header>
@@ -106,7 +106,7 @@ const Buscador = () => {
         </div>
       )}
 
-      <div className="bg-white/40 backdrop-blur-sm p-6 md:p-10 rounded-[2.5rem] border border-dark/5 shadow-inner mb-12">
+      <div className="bg-white/40 backdrop-blur-sm p-6 md:p-8 rounded-[2.5rem] border border-dark/5 shadow-inner mb-12">
         <div className="space-y-2">
           {listaSeries.map((serie, index) => (
             <FilaBusqueda
@@ -122,17 +122,17 @@ const Buscador = () => {
         </div>
 
         {/* Acciones de Grupo */}
-        <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
+        <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
           <button
             onClick={agregarFila}
             disabled={listaSeries.length >= 5}
-            className={`w-full sm:w-auto flex items-center justify-center space-x-3 px-8 py-4 rounded-2xl font-bold uppercase tracking-widest transition-all shadow-lg ${
+            className={`w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all shadow-md ${
               listaSeries.length < 5
                 ? 'bg-dark text-white hover:bg-dark/90 hover:scale-[1.02] active:scale-[0.98]'
                 : 'bg-dark/10 text-dark/30 cursor-not-allowed shadow-none border border-dark/5'
             }`}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             <span>Add Row ({listaSeries.length}/5)</span>
@@ -140,9 +140,9 @@ const Buscador = () => {
 
           <button
             onClick={resetearTodo}
-            className="w-full sm:w-auto flex items-center justify-center space-x-3 px-8 py-4 bg-white border-2 border-dark/10 text-dark/60 rounded-2xl font-bold uppercase tracking-widest hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all active:scale-[0.98]"
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-3 bg-white border border-dark/10 text-dark/60 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all active:scale-[0.98]"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             <span>Reset All</span>
@@ -179,7 +179,7 @@ const Buscador = () => {
               <span className={`block text-[8px] uppercase tracking-widest font-bold mb-1 font-lato ${labelClasses}`}>
                 Row #{p.index + 1}
               </span>
-              <span className="block text-dark font-bold text-xs truncate font-fjalla uppercase">
+              <span className="block text-dark text-sm truncate font-fjalla uppercase font-normal">
                 {modelDisplay}
               </span>
             </div>
