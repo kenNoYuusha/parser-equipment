@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useModels } from '../hooks/useModels';
+import { findMatchingKit } from '../services/kitMatcher';
 import FilaBusqueda from './FilaBusqueda';
 import ModalDetalles from './ModalDetalles';
 
 /**
- * Componente Buscador: Refactorizado para procesamiento por lotes (Batch).
+ * Componente Buscador: Refactorizado para procesamiento por lotes (Batch) y emparejamiento de Kits.
  */
 const Buscador = () => {
   const { 
     cargando, 
     error, 
-    productosAnalizados, 
+    productosAnalizados,
+    kits,
     actualizarProductoAnalizado, 
     eliminarProductoAnalizado,
     resetearProductosAnalizados 
@@ -19,6 +21,14 @@ const Buscador = () => {
   const [listaSeries, setListaSeries] = useState([""]);
   const [modalOpen, setModalOpen] = useState(false);
   const [itemSeleccionado, setItemSeleccionado] = useState(null);
+
+  /**
+   * Lógica de emparejamiento de Kits (Memorizada)
+   * Se dispara automáticamente cuando cambia la lista de productos analizados o la DB de kits.
+   */
+  const masterCode = useMemo(() => {
+    return findMatchingKit(productosAnalizados, kits);
+  }, [productosAnalizados, kits]);
 
   const handleInputChange = (index, valor) => {
     const nuevaLista = [...listaSeries];
@@ -56,7 +66,7 @@ const Buscador = () => {
 
   if (cargando) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-100 space-y-4 font-lato">
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 font-lato">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         <p className="text-dark/70 font-medium">Synchronizing Commercial Database...</p>
       </div>
@@ -69,13 +79,32 @@ const Buscador = () => {
         <div className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-bold rounded-full mb-6 uppercase tracking-[0.2em] border border-primary/20">
           Batch Processing System
         </div>
-        <h1 className="text-2xl md:text-4xl text-dark mb-6">
+        <h1 className="text-5xl md:text-6xl text-dark mb-6">
           Serial Verification
         </h1>
         <p className="text-dark/50 text-xl max-w-2xl mx-auto leading-relaxed font-lato">
           Perform multiple hardware analysis simultaneously. Add up to 5 serial numbers for batch processing.
         </p>
       </header>
+
+      {/* Alerta de Master Code (Posicionada después del subtítulo) */}
+      {masterCode && (
+        <div className="mb-8 animate-in slide-in-from-top duration-500">
+          <div className="bg-primary/10 border-2 border-primary/30 p-4 rounded-2xl flex items-center justify-center space-x-4 shadow-lg shadow-primary/5">
+            <div className="bg-primary text-white p-2 rounded-lg">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </div>
+            <div className="text-center">
+              <span className="block text-[10px] uppercase tracking-[0.2em] text-primary/60 font-bold">Matching Kit Found</span>
+              <h2 className="text-2xl font-fjalla text-dark uppercase tracking-wider">
+                Master Code: <span className="text-primary">{masterCode}</span>
+              </h2>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white/40 backdrop-blur-sm p-6 md:p-10 rounded-[2.5rem] border border-dark/5 shadow-inner mb-12">
         <div className="space-y-2">
@@ -130,7 +159,7 @@ const Buscador = () => {
           let labelClasses = "text-primary/60";
           
           if (isRefurb && isDiscontinued) {
-            containerClasses = "bg-gradient-to-r from-red-500/30 to-orange-500/30 border-red-500/40 shadow-sm shadow-red-500/5";
+            containerClasses = "bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/20 shadow-sm shadow-red-500/5";
             labelClasses = "text-red-500/60";
           } else if (isDiscontinued) {
             containerClasses = "bg-red-500/10 border-red-500/20 shadow-sm shadow-red-500/5";
@@ -147,10 +176,10 @@ const Buscador = () => {
               key={i} 
               className={`p-3 border rounded-xl animate-in zoom-in-90 transition-all duration-300 ${containerClasses}`}
             >
-              <span className={`block text-xs uppercase tracking-widest font-bold mb-1 font-lato ${labelClasses}`}>
+              <span className={`block text-[8px] uppercase tracking-widest font-bold mb-1 font-lato ${labelClasses}`}>
                 Row #{p.index + 1}
               </span>
-              <span className="block text-dark text-md truncate font-fjalla uppercase">
+              <span className="block text-dark font-bold text-xs truncate font-fjalla uppercase">
                 {modelDisplay}
               </span>
             </div>

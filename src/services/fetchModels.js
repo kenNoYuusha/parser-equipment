@@ -5,6 +5,10 @@ import { formatearFechaSerial } from '../utils/conversorFechas';
 // URL de Google Sheets (formato TSV/CSV)
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ74YRCmDIVupviaj7YYegoaOHlN3Db0DvWZri0CpjheobakvnFt0rnFV4OEXWVtZkIDoww3SBav5oy/pub?gid=0&single=true&output=tsv";
 
+// URL para la pestaña de Kits (Asumiendo un gid diferente, por ejemplo gid=12345)
+const KITS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ74YRCmDIVupviaj7YYegoaOHlN3Db0DvWZri0CpjheobakvnFt0rnFV4OEXWVtZkIDoww3SBav5oy/pub?gid=1847281935&single=true&output=tsv";
+
+
 /**
  * Carga el diccionario de modelos desde la fuente de datos externa.
  * @returns {Promise<Object>} Diccionario indexado por modelo_id.
@@ -40,6 +44,32 @@ export const cargarDiccionarioModelos = async () => {
   } catch (error) {
     console.error("Error en el servicio de modelos:", error);
     throw error;
+  }
+};
+
+/**
+ * Carga la base de datos de Kits comerciales.
+ * @returns {Promise<Array>} Array de objetos con la definición de kits.
+ */
+export const cargarKits = async () => {
+  try {
+    const response = await fetch(KITS_URL);
+    if (!response.ok) throw new Error('Fallo en la conexión con la base de datos de kits.');
+    
+    const text = await response.text();
+    
+    return new Promise((resolve, reject) => {
+      Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => resolve(results.data),
+        error: (error) => reject(error)
+      });
+    });
+  } catch (error) {
+    console.error("Error en el servicio de kits:", error);
+    // Retornamos un array vacío para no romper la app si falla esta pestaña
+    return [];
   }
 };
 

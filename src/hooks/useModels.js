@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { cargarDiccionarioModelos, enriquecerNumeroSerie } from '../services/fetchModels';
+import { cargarDiccionarioModelos, cargarKits, enriquecerNumeroSerie } from '../services/fetchModels';
 
 /**
  * Hook personalizado para gestionar el estado de la base de datos de modelos
@@ -7,6 +7,7 @@ import { cargarDiccionarioModelos, enriquecerNumeroSerie } from '../services/fet
  */
 export const useModels = () => {
   const [diccionarioModelos, setDiccionarioModelos] = useState(null);
+  const [kits, setKits] = useState([]);
   const [productosAnalizados, setProductosAnalizados] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -14,10 +15,11 @@ export const useModels = () => {
   useEffect(() => {
     let isMounted = true;
 
-    cargarDiccionarioModelos()
-      .then((data) => {
+    Promise.all([cargarDiccionarioModelos(), cargarKits()])
+      .then(([modelosData, kitsData]) => {
         if (isMounted) {
-          setDiccionarioModelos(data);
+          setDiccionarioModelos(modelosData);
+          setKits(kitsData);
           setCargando(false);
         }
       })
@@ -84,6 +86,7 @@ export const useModels = () => {
 
   return {
     diccionarioModelos,
+    kits,
     productosAnalizados,
     cargando,
     error,
