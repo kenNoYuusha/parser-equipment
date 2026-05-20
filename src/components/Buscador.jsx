@@ -20,6 +20,7 @@ const Buscador = () => {
   
   const [listaSeries, setListaSeries] = useState([""]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [itemSeleccionado, setItemSeleccionado] = useState(null);
 
   /**
@@ -38,7 +39,7 @@ const Buscador = () => {
   };
 
   const agregarFila = () => {
-    if (listaSeries.length < 5) {
+    if (listaSeries.length < 10) {
       setListaSeries([...listaSeries, ""]);
     }
   };
@@ -52,8 +53,15 @@ const Buscador = () => {
   };
 
   const resetearTodo = () => {
+    // Si no hay nada que resetear, no hacemos nada
+    if (listaSeries.length === 1 && listaSeries[0] === "") return;
+    setShowResetConfirm(true);
+  };
+
+  const confirmarReset = () => {
     setListaSeries([""]);
     resetearProductosAnalizados();
+    setShowResetConfirm(false);
   };
 
   const abrirDetalles = (index) => {
@@ -82,14 +90,14 @@ const Buscador = () => {
         <h1 className="text-3xl md:text-4xl text-dark mb-4 uppercase tracking-widest font-fjalla">
           Serial Verification
         </h1>
-        <p className="text-dark/50 text-base max-w-2xl mx-auto leading-relaxed font-lato">
-          Perform multiple hardware analysis simultaneously. Add up to 5 serial numbers for batch processing.
+        <p className="text-dark/50 text-sm md:text-base max-w-3xl mx-auto leading-relaxed font-lato">
+          Simultaneous multi-hardware analysis for batch processing up to 10 units.
         </p>
       </header>
 
       {/* Alerta de Master Code (Posicionada después del subtítulo) */}
       {masterCode && (
-        <div className="mb-8 animate-in slide-in-from-top duration-500">
+        <div className="mb-6 animate-in slide-in-from-top duration-500">
           <div className="bg-primary/10 border-2 border-primary/30 p-4 rounded-2xl flex items-center justify-center space-x-4 shadow-lg shadow-primary/5">
             <div className="bg-primary text-white p-2 rounded-lg">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,7 +114,35 @@ const Buscador = () => {
         </div>
       )}
 
-      <div className="bg-white/40 backdrop-blur-sm p-6 md:p-8 rounded-[2.5rem] border border-dark/5 shadow-inner mb-12">
+      <div className="bg-white/40 backdrop-blur-sm p-6 md:p-8 rounded-[2.5rem] border border-dark/5 shadow-inner mb-8">
+        {/* Cabecera de Acciones Centrada */}
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8 pb-6 border-b border-dark/5">
+          <button
+            onClick={agregarFila}
+            disabled={listaSeries.length >= 10}
+            className={`w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all shadow-md ${
+              listaSeries.length < 10
+                ? 'bg-dark text-white hover:bg-dark/90 hover:scale-[1.02] active:scale-[0.98]'
+                : 'bg-dark/10 text-dark/30 cursor-not-allowed shadow-none border border-dark/5'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            <span>Add Serial ({listaSeries.length}/10)</span>
+          </button>
+
+          <button
+            onClick={resetearTodo}
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-3 bg-white border border-dark/10 text-dark/60 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all active:scale-[0.98] shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Reset All</span>
+          </button>
+        </div>
+
         <div className="space-y-2">
           {listaSeries.map((serie, index) => (
             <FilaBusqueda
@@ -119,34 +155,6 @@ const Buscador = () => {
               isValid={productosAnalizados[index]?.valido || false}
             />
           ))}
-        </div>
-
-        {/* Acciones de Grupo */}
-        <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-          <button
-            onClick={agregarFila}
-            disabled={listaSeries.length >= 5}
-            className={`w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all shadow-md ${
-              listaSeries.length < 5
-                ? 'bg-dark text-white hover:bg-dark/90 hover:scale-[1.02] active:scale-[0.98]'
-                : 'bg-dark/10 text-dark/30 cursor-not-allowed shadow-none border border-dark/5'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <span>Add Row ({listaSeries.length}/5)</span>
-          </button>
-
-          <button
-            onClick={resetearTodo}
-            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-3 bg-white border border-dark/10 text-dark/60 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all active:scale-[0.98]"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>Reset All</span>
-          </button>
         </div>
       </div>
 
@@ -192,6 +200,38 @@ const Buscador = () => {
         onClose={() => setModalOpen(false)} 
         resultadoCompleto={itemSeleccionado} 
       />
+
+      {/* Modal de Confirmación de Reset */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-dark/60 backdrop-blur-sm" onClick={() => setShowResetConfirm(false)}></div>
+          <div className="relative bg-white p-8 rounded-[2rem] shadow-2xl max-w-sm w-full text-center animate-in zoom-in-95 duration-300">
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-fjalla text-dark uppercase mb-2">Are you sure?</h3>
+            <p className="text-dark/50 text-sm font-lato mb-8">
+              This will clear all inputs and analysis results. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                className="flex-1 py-3 px-4 bg-dark/5 text-dark/60 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-dark/10 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmarReset}
+                className="flex-1 py-3 px-4 bg-red-500 text-white rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all"
+              >
+                Reset All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
