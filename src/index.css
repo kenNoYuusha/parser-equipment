@@ -2,30 +2,38 @@
 
 :root {
   --color-primary: #77bc1f;
-  --color-dark: #3c3936;
-  --color-light: #fcfcfc;
   --bg-app: #fcfcfc;
+  --bg-surface: #ffffff;
+  --text-main: #3c3936;
+  --text-muted: rgba(60, 57, 54, 0.6);
+  --border-main: rgba(60, 57, 54, 0.1);
 }
 
 [data-theme='dark'] {
   --color-primary: #92e02e;
-  --color-dark: #e1e1e1;
-  --color-light: #121212;
-  --bg-app: #121212;
+  --bg-app: #302c2c;
+  --bg-surface: #1e1e1e;
+  --text-main: #e1e1e1;
+  --text-muted: rgba(225, 225, 225, 0.5);
+  --border-main: rgba(225, 225, 225, 0.1);
 }
 
 [data-theme='pink'] {
   --color-primary: #ff85a2;
-  --color-dark: #4a1c26;
-  --color-light: #fff0f3;
   --bg-app: #fff0f3;
+  --bg-surface: #ffffff;
+  --text-main: #4a1c26;
+  --text-muted: rgba(74, 28, 38, 0.6);
+  --border-main: rgba(74, 28, 38, 0.1);
 }
 
 @theme {
   --color-primary: var(--color-primary);
-  --color-dark: var(--color-dark);
-  --color-light: var(--color-light);
   --color-bg-app: var(--bg-app);
+  --color-surface: var(--bg-surface);
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-border-main: var(--border-main);
   
   --font-fjalla: "Fjalla One", sans-serif;
   --font-lato: "Lato", sans-serif;
@@ -33,7 +41,7 @@
 
 @layer base {
   body {
-    @apply bg-bg-app text-dark font-lato transition-colors duration-300;
+    @apply bg-bg-app text-text-main font-lato transition-colors duration-300;
   }
   
   h1, h2, h3, h4, h5, h6 {

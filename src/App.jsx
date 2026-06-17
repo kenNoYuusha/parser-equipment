@@ -17,7 +17,7 @@ function App() {
         </Routes>
       </main>
       
-      <footer className="fixed bottom-0 left-0 w-full py-2 bg-primary text-dark text-xs font-medium shadow-inner z-50">
+      <footer className="fixed bottom-0 left-0 w-full py-2 bg-primary text-white text-xs font-medium shadow-inner z-50">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center opacity-90">
           <p>&copy; {new Date().getFullYear()} Parcer Equipment - Serial Analysis System</p>
           <p className="text-[10px] uppercase tracking-tighter sm:mt-0 mt-1">
