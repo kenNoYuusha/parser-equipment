@@ -19,7 +19,7 @@ const FilaBusqueda = ({
   return (
     <div className="flex flex-row items-center gap-3 mb-3 animate-in fade-in slide-in-from-left-4 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
       {/* Indicador de Fila */}
-      <div className="flex-none w-8 h-8 flex items-center justify-center bg-text-main text-primary font-fjalla rounded-lg border border-primary/20 shadow-sm text-xs transition-colors duration-300">
+      <div className="flex-none w-8 h-8 flex items-center justify-center bg-bg-number text-primary font-fjalla rounded-lg border border-primary/20 shadow-sm text-xs transition-colors duration-300">
         {index + 1}
       </div>
 
