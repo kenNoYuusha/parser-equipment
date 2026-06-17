@@ -6,7 +6,7 @@ import { formatearFechaSerial } from '../utils/conversorFechas';
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ74YRCmDIVupviaj7YYegoaOHlN3Db0DvWZri0CpjheobakvnFt0rnFV4OEXWVtZkIDoww3SBav5oy/pub?gid=0&single=true&output=tsv";
 
 // URL para la pestaña de Kits (Asumiendo un gid diferente, por ejemplo gid=12345)
-const KITS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ74YRCmDIVupviaj7YYegoaOHlN3Db0DvWZri0CpjheobakvnFt0rnFV4OEXWVtZkIDoww3SBav5oy/pub?gid=1847281935&single=true&output=tsv";
+const KITS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ74YRCmDIVupviaj7YYegoaOHlN3Db0DvWZri0CpjheobakvnFt0rnFV4OEXWVtZkIDoww3SBav5oy/pub?gid=456608825&single=true&output=tsv";
 
 
 /**

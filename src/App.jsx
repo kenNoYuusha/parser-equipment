@@ -1,15 +1,20 @@
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import Buscador from './components/Buscador';
+import Navbar from './components/Navbar';
 
 /**
- * Punto de entrada de la aplicación.
- * Estructura rediseñada con Tailwind CSS.
+ * Punto de entrada de la aplicación con navegación y temas.
  */
 function App() {
   return (
-    <div className="min-h-screen bg-light selection:bg-primary selection:text-white pb-24">
+    <div className="min-h-screen bg-bg-app selection:bg-primary selection:text-white pb-24 transition-colors duration-300">
+      <Navbar />
+      
       <main className="container mx-auto px-4 py-12">
-        <Buscador />
+        <Routes>
+          <Route path="/" element={<Buscador />} />
+        </Routes>
       </main>
       
       <footer className="fixed bottom-0 left-0 w-full py-2 bg-primary text-dark text-xs font-medium shadow-inner z-50">

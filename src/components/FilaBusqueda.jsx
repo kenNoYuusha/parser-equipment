@@ -1,24 +1,37 @@
 import React from 'react';
 
 /**
- * Representa una fila individual de búsqueda en el sistema por lotes.
+ * Representa una fila individual de búsqueda compacta.
+ * Muestra el resultado (Badge) al lado del input.
  */
-const FilaBusqueda = ({ index, value, onChange, onOpenDetails, onDelete, isValid }) => {
+const FilaBusqueda = ({ 
+  index, 
+  value, 
+  onChange, 
+  onOpenDetails, 
+  onDelete, 
+  productoAnalizado 
+}) => {
+  const isValid = productoAnalizado?.valido || false;
+  const modelName = productoAnalizado?.model_na || '';
+  const isRefurb = productoAnalizado?.resultadoCompleto?.isRefurbished;
+
   return (
-    <div className="flex flex-row items-center gap-3 mb-4 animate-in fade-in slide-in-from-left-4 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+    <div className="flex flex-row items-center gap-3 mb-3 animate-in fade-in slide-in-from-left-4 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
       {/* Indicador de Fila */}
-      <div className="flex-none w-10 h-10 flex items-center justify-center bg-dark text-primary font-fjalla rounded-xl border border-primary/20 shadow-sm text-sm">
-        #{index + 1}
+      <div className="flex-none w-8 h-8 flex items-center justify-center bg-dark text-primary font-fjalla rounded-lg border border-primary/20 shadow-sm text-xs">
+        {index + 1}
       </div>
 
-      {/* Input de Serial */}
-      <div className="grow relative">
+      {/* Input de Serial Compacto */}
+      <div className="flex-none">
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(index, e.target.value)}
-          placeholder="Enter Serial Number..."
-          className={`w-full px-5 py-3 bg-white border-2 rounded-xl outline-none transition-all font-medium text-sm md:text-base ${
+          placeholder="Serial..."
+          maxLength={30}
+          className={`w-50 md:w-60 px-3 py-2 bg-white border-2 rounded-xl outline-none transition-all font-medium text-sm ${
             value 
               ? isValid 
                 ? 'border-primary/50 focus:border-primary shadow-primary/5' 
@@ -28,33 +41,36 @@ const FilaBusqueda = ({ index, value, onChange, onOpenDetails, onDelete, isValid
         />
       </div>
 
-      {/* Botones de Acción */}
-      <div className="flex flex-row gap-2">
-        {/* Botón de Detalles */}
-        <button
-          onClick={() => onOpenDetails(index)}
-          disabled={!isValid}
-          title={isValid ? "View report" : "Valid serial required"}
-          className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${
-            isValid
-              ? 'bg-primary text-white hover:bg-primary/90 shadow-md active:scale-95'
-              : 'bg-dark/5 text-dark/20 cursor-not-allowed border border-dark/5'
-          }`}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-          </svg>
-        </button>
+      {/* Badge de Modelo (Al lado del input) */}
+      <div className="grow min-w-0 flex items-center">
+        {isValid && (
+          <div 
+            
+            className={`px-3 py-1.5 rounded-lg border flex items-center gap-2 overflow-hidden ${
+              isRefurb 
+                ? 'bg-orange-500/10 border-orange-500/20 text-orange-600' 
+                : 'bg-primary/10 border-primary/20 text-primary'
+            }`}
+          >
+            <span className="text-[16px] font-fjalla uppercase tracking-wider truncate">
+              {isRefurb ? `${modelName}-FC` : modelName}
+            </span>
+            <svg onClick={() => onOpenDetails(index)} className="cursor-pointer w-5 h-5 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        )}
+      </div>
 
-        {/* Botón de Eliminar (Solo a partir de la segunda fila) */}
+      {/* Botones de Acción */}
+      <div className="flex-none flex flex-row gap-2">
         {index > 0 && (
           <button
             onClick={() => onDelete(index)}
             title="Remove row"
-            className="w-11 h-11 flex items-center justify-center rounded-xl bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all active:scale-95"
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all active:scale-95"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
           </button>

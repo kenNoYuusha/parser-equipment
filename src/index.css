@@ -1,9 +1,31 @@
 @import "tailwindcss";
 
-@theme {
+:root {
   --color-primary: #77bc1f;
   --color-dark: #3c3936;
   --color-light: #fcfcfc;
+  --bg-app: #fcfcfc;
+}
+
+[data-theme='dark'] {
+  --color-primary: #92e02e;
+  --color-dark: #e1e1e1;
+  --color-light: #121212;
+  --bg-app: #121212;
+}
+
+[data-theme='pink'] {
+  --color-primary: #ff85a2;
+  --color-dark: #4a1c26;
+  --color-light: #fff0f3;
+  --bg-app: #fff0f3;
+}
+
+@theme {
+  --color-primary: var(--color-primary);
+  --color-dark: var(--color-dark);
+  --color-light: var(--color-light);
+  --color-bg-app: var(--bg-app);
   
   --font-fjalla: "Fjalla One", sans-serif;
   --font-lato: "Lato", sans-serif;
@@ -11,7 +33,7 @@
 
 @layer base {
   body {
-    @apply bg-light text-dark font-lato;
+    @apply bg-bg-app text-dark font-lato transition-colors duration-300;
   }
   
   h1, h2, h3, h4, h5, h6 {
