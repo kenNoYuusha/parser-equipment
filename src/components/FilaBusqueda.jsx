@@ -45,7 +45,7 @@ const FilaBusqueda = ({
       <div className="grow min-w-0 flex items-center">
         {isValid && (
           <div 
-            className={`px-3 py-1.5 rounded-lg border flex items-center gap-2 overflow-hidden transition-colors duration-300 ${
+            className={`w-40 px-3 py-1.5 rounded-lg border flex justify-between gap-2 overflow-hidden transition-colors duration-300 ${
               isRefurb 
                 ? 'bg-orange-500/10 border-orange-500/20 text-orange-500' 
                 : 'bg-primary/10 border-primary/20 text-primary'
