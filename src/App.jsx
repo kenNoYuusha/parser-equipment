@@ -8,7 +8,7 @@ import Navbar from './components/Navbar';
  */
 function App() {
   return (
-    <div className="min-h-screen bg-bg-app selection:bg-primary selection:text-white pb-24 transition-colors duration-300 relative overflow-hidden">
+    <div className="min-h-screen bg-bg-app selection:bg-primary selection:text-white pb-24 transition-colors duration-300 relative">
       {/* Patrón de Fondo Decorativo */}
       <div className="fixed inset-0 pointer-events-none z-0 bg-tool-pattern" aria-hidden="true" />
       
