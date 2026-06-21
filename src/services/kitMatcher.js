@@ -1,6 +1,7 @@
 /**
  * kitMatcher.js
- * Optimized for the new Excel structure with individual columns for Tools, Batteries, and Chargers.
+ * Optimizado para permitir códigos extra en el inventario del usuario
+ * siempre que se cumplan los componentes mínimos exigidos por el Kit.
  */
 
 const normalize = (str) => {
@@ -25,6 +26,7 @@ const getInventory = (productosAnalizados) => {
 
 /**
  * Matches user inventory against a Kit row.
+ * Permite que el usuario tenga componentes adicionales (herramientas/baterías/cargadores de más).
  * @param {Object} inventory - { MODEL: count }
  * @param {Object} kitRow - Row from Excel
  * @returns {boolean}
@@ -42,26 +44,24 @@ const isMatch = (inventory, kitRow) => {
 
   if (kitComponents.length === 0) return false;
 
-  // Create frequency map for the Kit row
+  // Create frequency map for the Kit row (Requisitos mínimos del kit)
   const kitRequirements = kitComponents.reduce((acc, comp) => {
     acc[comp] = (acc[comp] || 0) + 1;
     return acc;
   }, {});
 
-  // Check if every requirement in the kit is met by the user inventory
-  // AND if the user doesn't have extra items that aren't in the kit? 
-  // User said: "match entre todas las tools todas las baterias y todos lo chargers"
-  // Usually this means the sets must be identical.
-  
-  const userModels = Object.keys(inventory);
   const kitModels = Object.keys(kitRequirements);
 
-  if (userModels.length !== kitModels.length) return false;
-
+  // NUEVA LÓGICA: Comprobar si el usuario cumple con CADA UNO de los requisitos del kit.
   for (const model of kitModels) {
-    if (inventory[model] !== kitRequirements[model]) return false;
+    // Si el usuario ni siquiera tiene el modelo que el kit pide, NO hay match
+    if (!inventory[model]) return false;
+    
+    // Si el usuario tiene el modelo, pero en una cantidad MENOR a la requerida por el kit, NO hay match
+    if (inventory[model] < kitRequirements[model]) return false;
   }
 
+  // Si pasó el bucle anterior, significa que tiene todo lo necesario (y tal vez más). ¡Es un Match!
   return true;
 };
 
