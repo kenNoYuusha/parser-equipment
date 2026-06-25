@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import ResultadoCard from './ResultadoCard';
+
 
 /**
  * Modal flotante para mostrar el detalle completo de un análisis.

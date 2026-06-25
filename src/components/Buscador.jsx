@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { findMatchingKit } from '../services/kitMatcher';
 import { enriquecerNumeroSerie } from '../services/fetchModels';
@@ -8,7 +8,6 @@ import ModalDetalles from './ModalDetalles';
 const Buscador = () => {
   const { 
     cargando, 
-    error, 
     listaSeries,
     productosAnalizados,
     diccionarioModelos,
@@ -19,6 +18,7 @@ const Buscador = () => {
     eliminarProducto,
     resetProductos 
   } = useAppStore();
+
   
   const [modalOpen, setModalOpen] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -29,10 +29,8 @@ const Buscador = () => {
     fetchDatabase();
   }, [fetchDatabase]);
 
-  // Lógica de emparejamiento de Kits
-  const matchingKit = useMemo(() => {
-    return findMatchingKit(productosAnalizados, kits);
-  }, [productosAnalizados, kits]);
+  // Lógica de emparejamiento de Kits (El compilador de React se encarga de memoizar esto)
+  const matchingKit = findMatchingKit(productosAnalizados, kits);
 
   const handleInputChange = (index, valor) => {
     if (!valor.trim()) {
@@ -68,6 +66,7 @@ const Buscador = () => {
       setModalOpen(true);
     }
   };
+
 
   if (cargando) {
     return (

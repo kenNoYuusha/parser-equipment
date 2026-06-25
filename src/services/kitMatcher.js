@@ -9,6 +9,36 @@ const normalize = (str) => {
 };
 
 /**
+ * Pre-processes a kits list by compiling requirements into frequency maps.
+ * Run once when kits database is loaded to avoid repeated calculations on render.
+ * @param {Array} kitsData 
+ * @returns {Array} Kits list with pre-calculated requirements maps
+ */
+export const preprocessKits = (kitsData) => {
+  if (!Array.isArray(kitsData)) return [];
+  return kitsData.map(kit => {
+    const kitComponents = [
+      kit.tool1, kit.tool2, kit.tool3, kit.tool4, kit.tool5,
+      kit.battery1, kit.battery2, kit.battery3, kit.battery4, 
+      kit.battery5, kit.battery6, kit.battery7, kit.battery8,
+      kit.charger1, kit.charger2, kit.charger3
+    ]
+    .map(c => normalize(c))
+    .filter(c => c !== "");
+
+    const requirements = kitComponents.reduce((acc, comp) => {
+      acc[comp] = (acc[comp] || 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      ...kit,
+      requirements
+    };
+  });
+};
+
+/**
  * Creates a frequency map of models from analyzed products.
  * @param {Array} productosAnalizados 
  * @returns {Object} { MODEL_NA: count }
@@ -30,36 +60,32 @@ const getInventory = (productosAnalizados) => {
  * @returns {boolean}
  */
 const isMatch = (inventory, kitRow) => {
-  // Extract all potential component columns
-  const kitComponents = [
-    kitRow.tool1, kitRow.tool2, kitRow.tool3, kitRow.tool4, kitRow.tool5,
-    kitRow.battery1, kitRow.battery2, kitRow.battery3, kitRow.battery4, 
-    kitRow.battery5, kitRow.battery6, kitRow.battery7, kitRow.battery8,
-    kitRow.charger1, kitRow.charger2, kitRow.charger3
-  ]
-  .map(c => normalize(c))
-  .filter(c => c !== "");
+  let reqs = kitRow.requirements;
 
-  if (kitComponents.length === 0) return false;
+  // Fallback: If requirements are not pre-calculated, calculate them on the fly
+  if (!reqs) {
+    const kitComponents = [
+      kitRow.tool1, kitRow.tool2, kitRow.tool3, kitRow.tool4, kitRow.tool5,
+      kitRow.battery1, kitRow.battery2, kitRow.battery3, kitRow.battery4, 
+      kitRow.battery5, kitRow.battery6, kitRow.battery7, kitRow.battery8,
+      kitRow.charger1, kitRow.charger2, kitRow.charger3
+    ]
+    .map(c => normalize(c))
+    .filter(c => c !== "");
 
-  // Create frequency map for the Kit row
-  const kitRequirements = kitComponents.reduce((acc, comp) => {
-    acc[comp] = (acc[comp] || 0) + 1;
-    return acc;
-  }, {});
+    reqs = kitComponents.reduce((acc, comp) => {
+      acc[comp] = (acc[comp] || 0) + 1;
+      return acc;
+    }, {});
+  }
 
-  // Check if every requirement in the kit is met by the user inventory
-  // AND if the user doesn't have extra items that aren't in the kit? 
-  // User said: "match entre todas las tools todas las baterias y todos lo chargers"
-  // Usually this means the sets must be identical.
-  
   const userModels = Object.keys(inventory);
-  const kitModels = Object.keys(kitRequirements);
+  const kitModels = Object.keys(reqs);
 
   if (userModels.length !== kitModels.length) return false;
 
   for (const model of kitModels) {
-    if (inventory[model] !== kitRequirements[model]) return false;
+    if (inventory[model] !== reqs[model]) return false;
   }
 
   return true;
@@ -87,3 +113,4 @@ export const findMatchingKit = (productosAnalizados, kitsData) => {
 
   return null;
 };
+

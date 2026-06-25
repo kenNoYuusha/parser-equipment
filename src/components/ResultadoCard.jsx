@@ -1,7 +1,6 @@
-import React from 'react';
-
 /**
  * Componente presentacional para mostrar los resultados del análisis.
+
  * Adaptado para soportar temas dinámicos.
  */
 const ResultadoCard = ({ resultado }) => {
@@ -36,7 +35,7 @@ const ResultadoCard = ({ resultado }) => {
   }
 
   return (
-    <div className="bg-surface animate-in fade-in duration-500 transition-colors duration-300">
+    <div className="bg-surface animate-in fade-in transition-colors duration-300">
       {/* Header con Serial */}
       <div className="bg-primary p-6 text-white flex justify-between items-center">
         <h2 className="text-2xl md:text-3xl text-white mb-0 font-fjalla tracking-widest uppercase">

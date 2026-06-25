@@ -1,5 +1,5 @@
-import React from 'react';
 import { useAppStore } from '../store/useAppStore';
+
 
 const Navbar = () => {
   const { theme, setTheme } = useAppStore();

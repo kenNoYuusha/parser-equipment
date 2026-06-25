@@ -1,8 +1,9 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 
 /**
  * Representa una fila individual de búsqueda compacta.
  * Muestra el resultado (Badge) al lado del input.
+ * Optimizado con estado local y debounce para evitar lag al escribir.
  */
 const FilaBusqueda = ({ 
   index, 
@@ -16,8 +17,43 @@ const FilaBusqueda = ({
   const modelName = productoAnalizado?.model_na || '';
   const isRefurb = productoAnalizado?.resultadoCompleto?.isRefurbished;
 
+  // Estado local para evitar lag de tipeo y accesos excesivos a disco
+  const [prevValue, setPrevValue] = useState(value);
+  const [localValue, setLocalValue] = useState(value);
+
+  // Ajustar estado si el valor prop cambia externamente (ej: reset)
+  if (value !== prevValue) {
+    setPrevValue(value);
+    setLocalValue(value);
+  }
+
+
+  // Propagación diferida (debounce) para no saturar Zustand ni guardar en LocalStorage por cada letra
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localValue !== value) {
+        onChange(index, localValue);
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [localValue, index, onChange, value]);
+
+  const handleBlur = () => {
+    if (localValue !== value) {
+      onChange(index, localValue);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && localValue !== value) {
+      onChange(index, localValue);
+    }
+  };
+
   return (
     <div className="flex flex-row items-center gap-3 mb-3 animate-in fade-in slide-in-from-left-4 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+
       {/* Indicador de Fila */}
       <div className="flex-none w-8 h-8 flex items-center justify-center bg-bg-number text-primary font-fjalla rounded-lg border border-primary/20 shadow-sm text-xs transition-colors duration-300">
         {index + 1}
@@ -27,12 +63,14 @@ const FilaBusqueda = ({
       <div className="flex-none">
         <input
           type="text"
-          value={value}
-          onChange={(e) => onChange(index, e.target.value)}
+          value={localValue}
+          onChange={(e) => setLocalValue(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
           placeholder="Serial..."
           maxLength={30}
           className={`w-50 md:w-60 px-3 py-2 bg-surface border-2 rounded-xl outline-none transition-all font-medium text-sm text-text-main ${
-            value 
+            localValue 
               ? isValid 
                 ? 'border-primary/50 focus:border-primary shadow-primary/5' 
                 : 'border-red-500/50 focus:border-red-500 bg-red-500/5'
@@ -40,6 +78,7 @@ const FilaBusqueda = ({
           }`}
         />
       </div>
+
 
       {/* Badge de Modelo (Al lado del input) */}
       <div className="grow min-w-0 flex items-center">
@@ -80,3 +119,6 @@ const FilaBusqueda = ({
 };
 
 export default FilaBusqueda;
+
+
+

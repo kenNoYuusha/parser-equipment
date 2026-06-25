@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { cargarDiccionarioModelos, cargarKits } from '../services/fetchModels';
+import { preprocessKits } from '../services/kitMatcher';
 
 export const useAppStore = create(
   persist(
@@ -19,17 +20,35 @@ export const useAppStore = create(
       error: null,
 
       fetchDatabase: async () => {
-        if (get().diccionarioModelos && get().kits.length > 0) return;
+        const hasCachedData = get().diccionarioModelos && get().kits.length > 0;
         
-        set({ cargando: true, error: null });
+        // Solo mostramos cargando si NO tenemos datos locales en caché
+        if (!hasCachedData) {
+          set({ cargando: true, error: null });
+        }
+        
         try {
-          const [modelos, kitsData] = await Promise.all([
+          const [modelos, kitsDataRaw] = await Promise.all([
             cargarDiccionarioModelos(),
             cargarKits()
           ]);
-          set({ diccionarioModelos: modelos, kits: kitsData, cargando: false });
+          
+          // Preprocesar los kits una sola vez en la descarga para optimizar el kitMatcher
+          const kitsData = preprocessKits(kitsDataRaw);
+          
+          set({ 
+            diccionarioModelos: modelos, 
+            kits: kitsData, 
+            cargando: false,
+            error: null 
+          });
         } catch (err) {
-          set({ error: err.message, cargando: false });
+          // Si falló y no teníamos caché, mostramos el error. Si teníamos caché, fallamos silenciosamente
+          if (!hasCachedData) {
+            set({ error: err.message, cargando: false });
+          } else {
+            console.warn("Background synchronization of databases failed. Using cached data.", err);
+          }
         }
       },
 
@@ -73,7 +92,9 @@ export const useAppStore = create(
       partialize: (state) => ({ 
         theme: state.theme, 
         listaSeries: state.listaSeries,
-        productosAnalizados: state.productosAnalizados 
+        productosAnalizados: state.productosAnalizados,
+        diccionarioModelos: state.diccionarioModelos,
+        kits: state.kits
       }),
       onRehydrateStorage: () => (state) => {
         if (state?.theme) {
@@ -83,3 +104,4 @@ export const useAppStore = create(
     }
   )
 );
+
