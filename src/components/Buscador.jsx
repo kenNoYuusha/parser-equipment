@@ -29,6 +29,9 @@ const Buscador = () => {
   const [kitSeleccionado, setKitSeleccionado] = useState(null);
   const [modalKitOpen, setModalKitOpen] = useState(false);
 
+  // State for Copy Toast Notification
+  const [mostrarCopiadoToast, setMostrarCopiadoToast] = useState(false);
+
   // Inicializar base de datos
   useEffect(() => {
     fetchDatabase();
@@ -97,7 +100,7 @@ const Buscador = () => {
   };
 
   const agregarFila = () => {
-    if (listaSeries.length < 10) {
+    if (listaSeries.length < 30) {
       setListaSeries([...listaSeries, ""]);
     }
   };
@@ -115,6 +118,82 @@ const Buscador = () => {
       setKitSeleccionado(kit);
       setModalKitOpen(true);
     }
+  };
+
+  // Clipboard Copier Function
+  const copiarResultados = () => {
+    const asignaciones = resolverAsignacionMultiKits(productosAnalizados, kits);
+    
+    // 1. Group components by tool index
+    const kitsAgrupados = {};
+    const indicesKitsProcesados = new Set();
+    
+    for (let i = 0; i < listaSeries.length; i++) {
+      const asig = asignaciones[i];
+      if (asig && asig.herramientaIndex !== undefined) {
+        const hIdx = asig.herramientaIndex;
+        if (!kitsAgrupados[hIdx]) {
+          kitsAgrupados[hIdx] = {
+            kitAsociado: asig.kitAsociado,
+            componentes: []
+          };
+        }
+        kitsAgrupados[hIdx].componentes.push(i);
+        indicesKitsProcesados.add(i);
+      }
+    }
+    
+    // 2. Group baretools (validated but not assigned to any kit)
+    const baretools = [];
+    for (let i = 0; i < listaSeries.length; i++) {
+      if (productosAnalizados[i]?.valido && !indicesKitsProcesados.has(i)) {
+        baretools.push(i);
+      }
+    }
+    
+    // 3. Format plain text output
+    let textoCopiar = "";
+    const bloquesKits = [];
+    
+    for (const [hIdx, data] of Object.entries(kitsAgrupados)) {
+      data.componentes.sort((a, b) => a - b);
+      
+      let bloque = `Kit: ${data.kitAsociado.model_id}\n`;
+      const lineasComp = data.componentes.map(idx => {
+        const serial = listaSeries[idx] || "";
+        const modelo = productosAnalizados[idx]?.model_na || "";
+        return `${serial.padEnd(25, ' ')}${modelo}`;
+      });
+      bloque += lineasComp.join('\n');
+      bloquesKits.push(bloque);
+    }
+    
+    if (bloquesKits.length > 0) {
+      textoCopiar += bloquesKits.join('\n\n\n'); // Two empty lines between kits
+    }
+    
+    if (baretools.length > 0) {
+      if (textoCopiar.length > 0) {
+        textoCopiar += '\n\n\n'; // Two empty lines separator
+      }
+      textoCopiar += "Baretools:\n";
+      const lineasBare = baretools.map(idx => {
+        const serial = listaSeries[idx] || "";
+        const modelo = productosAnalizados[idx]?.model_na || "";
+        return `${serial.padEnd(25, ' ')}${modelo}`;
+      });
+      textoCopiar += lineasBare.join('\n');
+    }
+    
+    // 4. Write text to Clipboard
+    navigator.clipboard.writeText(textoCopiar)
+      .then(() => {
+        setMostrarCopiadoToast(true);
+        setTimeout(() => setMostrarCopiadoToast(false), 1500);
+      })
+      .catch(err => {
+        console.error("Failed to copy results to clipboard: ", err);
+      });
   };
 
 
@@ -142,14 +221,43 @@ const Buscador = () => {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 pb-6 border-b border-border-main">
           <div className="text-left">
             <h3 className="text-sm text-text-main/60 font-bold uppercase tracking-wider">Input Serials</h3>
-            <p className="text-[10px] text-text-muted uppercase tracking-widest">Max 10 units per batch</p>
+            <p className="text-[10px] text-text-muted uppercase tracking-widest">Max 30 units per batch</p>
           </div>
           
           <div className="flex gap-2">
+            {/* Copy Button */}
+            <button
+              onClick={copiarResultados}
+              disabled={!productosAnalizados.some(p => p?.valido)}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all shadow-md ${
+                productosAnalizados.some(p => p?.valido)
+                  ? mostrarCopiadoToast
+                    ? 'bg-green-500 text-white hover:opacity-90'
+                    : 'bg-surface border border-border-main text-text-main hover:bg-text-main/5 cursor-pointer'
+                  : 'bg-surface border border-border-main text-text-muted opacity-30 cursor-not-allowed shadow-none'
+              }`}
+            >
+              {mostrarCopiadoToast ? (
+                <>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Copied!</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                  </svg>
+                  <span>Copy</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={agregarFila}
-              disabled={listaSeries.length >= 10}
-              className="flex items-center space-x-2 px-4 py-2 bg-text-main text-surface rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all hover:opacity-90 disabled:opacity-20 shadow-md"
+              disabled={listaSeries.length >= 30}
+              className="flex items-center space-x-2 px-4 py-2 bg-text-main text-surface rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all hover:opacity-90 disabled:opacity-20 shadow-md cursor-pointer"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -159,7 +267,7 @@ const Buscador = () => {
 
             <button
               onClick={() => setShowResetConfirm(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-surface border border-border-main text-text-muted rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-red-500/10 hover:text-red-500 transition-all"
+              className="flex items-center space-x-2 px-4 py-2 bg-surface border border-border-main text-text-muted rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-red-500/10 hover:text-red-500 transition-all cursor-pointer"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -180,7 +288,7 @@ const Buscador = () => {
               return (
                 <div 
                   key={`kit-group-${grupo.herramientaIndex}`}
-                  className={`p-4 rounded-3xl border transition-all duration-300 flex flex-row items-stretch gap-4 ${borderTheme}`}
+                  className={`p-4 rounded-3xl border transition-all duration-300 flex flex-row items-stretch gap-2 ${borderTheme}`}
                 >
                   {/* Columna Izquierda: Filas de búsqueda apiladas */}
                   <div className="flex-grow flex flex-col gap-3 justify-center">
@@ -198,44 +306,37 @@ const Buscador = () => {
                   </div>
 
                   {/* Columna Derecha: Etiqueta del kit combinada y centrada verticalmente */}
-                  <div className="flex-none w-56 flex items-center justify-center border-l border-border-main pl-4">
+                  <div className="flex-none w-64 flex items-center justify-center border-l border-border-main pl-2">
                     {grupo.kitInfo.matchCompleto ? (
-                      /* Kit completo: tarjeta única al 100% */
+                      /* Kit completo: tarjeta única al 100% clickeable completa */
                       <div 
-                        className="w-full py-4 px-3 rounded-2xl border bg-primary text-white border-primary shadow-lg shadow-primary/25 flex flex-col items-center justify-center gap-1.5 select-none animate-in fade-in"
+                        onClick={() => abrirDetallesKit(grupo.kitInfo.kitAsociado)}
+                        className="w-full py-4 px-3 rounded-2xl border bg-primary text-white border-primary shadow-lg shadow-primary/25 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-300 select-none hover:bg-primary/95 active:scale-98 animate-in fade-in"
                       >
-                        <div className="flex items-center justify-between w-full">
-                          <span className="text-[8px] uppercase tracking-[0.2em] font-bold opacity-85">
-                            Kit Complete
-                          </span>
-                          <svg 
-                            onClick={() => abrirDetallesKit(grupo.kitInfo.kitAsociado)}
-                            className="w-5 h-5 cursor-pointer hover:scale-115 transition-transform flex-none text-white" 
-                            fill="none" 
-                            stroke="currentColor" 
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                          </svg>
-                        </div>
-                        <span className="text-[14px] font-fjalla uppercase tracking-wider text-center font-bold break-all leading-none mt-1">
+                        <svg className="w-5 h-5 flex-none text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                        <span className="text-[8px] uppercase tracking-[0.2em] font-bold opacity-85 text-center">
+                          Kit Complete
+                        </span>
+                        <span className="text-[14px] font-fjalla uppercase tracking-wider text-center font-bold break-all leading-normal mt-1">
                           {grupo.kitInfo.kitAsociado.model_id}
                         </span>
                       </div>
                     ) : (
-                      /* Kit incompleto: lista de candidatos viables al 50% */
+                      /* Kit incompleto: lista de candidatos viables al 50% clickeables completos */
                       <div className="w-full flex flex-col gap-2 max-h-[180px] overflow-y-auto pr-1">
                         {grupo.kitInfo.candidatos.slice(0, 4).map((cand) => (
                           <div 
                             key={cand.model_id}
-                            className="w-full py-2.5 px-3 rounded-xl border bg-primary/5 border-primary/20 text-primary opacity-50 hover:opacity-90 transition-all flex items-center justify-between gap-2"
+                            onClick={() => abrirDetallesKit(cand)}
+                            className="w-full py-2.5 px-3 rounded-xl border bg-primary/5 border-primary/20 text-primary opacity-50 hover:opacity-100 hover:bg-primary/10 transition-all flex items-center justify-between gap-2 cursor-pointer select-none"
                           >
-                            <span className="text-[11px] font-fjalla uppercase tracking-wider font-bold truncate leading-none">
+                            <span className="text-[11px] font-fjalla uppercase tracking-wider font-bold truncate leading-normal py-0.5">
                               {cand.model_id}
                             </span>
                             <svg 
-                              onClick={() => abrirDetallesKit(cand)}
-                              className="w-4 h-4 cursor-pointer flex-none hover:scale-125 transition-transform text-primary" 
+                              className="w-4 h-4 flex-none text-primary" 
                               fill="none" 
                               stroke="currentColor" 
                               viewBox="0 0 24 24"
@@ -259,7 +360,7 @@ const Buscador = () => {
               return (
                 <div 
                   key={`suelto-group-${grupo.index}`}
-                  className="p-4 rounded-3xl border border-transparent flex flex-row items-stretch gap-4"
+                  className="p-4 rounded-3xl border border-transparent flex flex-row items-stretch gap-2"
                 >
                   <div className="flex-grow flex flex-col gap-3 justify-center">
                     <FilaBusqueda
@@ -273,7 +374,7 @@ const Buscador = () => {
                     />
                   </div>
                   {/* Columna derecha vacía del mismo ancho exacto para mantener la cuadrícula alineada */}
-                  <div className="flex-none w-56 border-l border-transparent pl-4"></div>
+                  <div className="flex-none w-64 border-l border-transparent pl-2"></div>
                 </div>
               );
             }
