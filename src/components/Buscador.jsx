@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
-import { findMatchingKit } from '../services/kitMatcher';
+import { resolverAsignacionMultiKits } from '../services/kitMatcher';
 import { enriquecerNumeroSerie } from '../services/fetchModels';
 import FilaBusqueda from './FilaBusqueda';
 import ModalDetalles from './ModalDetalles';
+import ModalDetallesKit from './ModalDetallesKit';
 
 const Buscador = () => {
   const { 
@@ -24,13 +25,55 @@ const Buscador = () => {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [itemSeleccionado, setItemSeleccionado] = useState(null);
 
+  // States for Kit Details Modal
+  const [kitSeleccionado, setKitSeleccionado] = useState(null);
+  const [modalKitOpen, setModalKitOpen] = useState(false);
+
   // Inicializar base de datos
   useEffect(() => {
     fetchDatabase();
   }, [fetchDatabase]);
 
-  // Lógica de emparejamiento de Kits (El compilador de React se encarga de memoizar esto)
-  const matchingKit = findMatchingKit(productosAnalizados, kits);
+  // Lógica de emparejamiento de Kits Multi-Kit
+  const asignacionesKits = resolverAsignacionMultiKits(productosAnalizados, kits);
+
+  // Agrupamos las filas por su kit asignado o las dejamos sueltas
+  const gruposRenderizado = [];
+  const indicesProcesados = new Set();
+
+  for (let i = 0; i < listaSeries.length; i++) {
+    if (indicesProcesados.has(i)) continue;
+
+    const asignacion = asignacionesKits[i];
+
+    if (asignacion && asignacion.herramientaIndex !== undefined) {
+      const herramientaIdx = asignacion.herramientaIndex;
+      const indicesDelKit = [];
+
+      // Buscamos todas las filas asociadas a esta misma herramienta iniciadora
+      for (let j = 0; j < listaSeries.length; j++) {
+        if (asignacionesKits[j]?.herramientaIndex === herramientaIdx) {
+          indicesDelKit.push(j);
+          indicesProcesados.add(j);
+        }
+      }
+
+      indicesDelKit.sort((a, b) => a - b);
+
+      gruposRenderizado.push({
+        tipo: 'kit',
+        herramientaIndex: herramientaIdx,
+        indices: indicesDelKit,
+        kitInfo: asignacion
+      });
+    } else {
+      gruposRenderizado.push({
+        tipo: 'suelto',
+        index: i
+      });
+      indicesProcesados.add(i);
+    }
+  }
 
   const handleInputChange = (index, valor) => {
     if (!valor.trim()) {
@@ -67,6 +110,13 @@ const Buscador = () => {
     }
   };
 
+  const abrirDetallesKit = (kit) => {
+    if (kit) {
+      setKitSeleccionado(kit);
+      setModalKitOpen(true);
+    }
+  };
+
 
   if (cargando) {
     return (
@@ -87,33 +137,6 @@ const Buscador = () => {
           Serial Verification
         </h1>
       </header>
-
-      {/* Alerta de Kit Encontrado */}
-      {matchingKit && (
-        <div className="mb-8 animate-in slide-in-from-top duration-500">
-          <div className="bg-primary/10 border-2 border-primary/30 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg shadow-primary/5 transition-colors">
-            <div className="flex items-center gap-4">
-              <div className="bg-primary text-white p-3 rounded-2xl shadow-lg">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <div>
-                <span className="block text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Matching Kit Found</span>
-                <h2 className="text-2xl font-fjalla text-text-main uppercase tracking-wider">
-                  Model: <span className="text-primary">{matchingKit.model_id}</span>
-                </h2>
-              </div>
-            </div>
-            {matchingKit.product_description && (
-              <div className="text-right hidden md:block">
-                <p className="text-text-muted text-[10px] uppercase font-bold tracking-widest">Description</p>
-                <p className="text-text-main font-medium text-sm">{matchingKit.product_description}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       <div className="bg-surface/50 p-6 md:p-8 rounded-[2.5rem] border border-border-main shadow-inner mb-8 transition-colors duration-300">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 pb-6 border-b border-border-main">
@@ -146,18 +169,81 @@ const Buscador = () => {
           </div>
         </div>
 
-        <div className="space-y-1">
-          {listaSeries.map((serie, index) => (
-            <FilaBusqueda
-              key={index}
-              index={index}
-              value={serie}
-              onChange={handleInputChange}
-              onOpenDetails={abrirDetalles}
-              onDelete={eliminarProducto}
-              productoAnalizado={productosAnalizados[index]}
-            />
-          ))}
+        {/* Contenedor de Filas con tamaño mínimo para asegurar la alineación de columnas */}
+        <div className="space-y-3 min-w-[760px]">
+          {gruposRenderizado.map((grupo, gIdx) => {
+            if (grupo.tipo === 'kit') {
+              const borderTheme = grupo.kitInfo.matchCompleto 
+                ? 'border-primary/40 shadow-lg shadow-primary/5 bg-primary/[0.02]' 
+                : 'border-primary/20 shadow shadow-primary/[0.02] bg-primary/[0.01]';
+
+              return (
+                <div 
+                  key={`kit-group-${grupo.herramientaIndex}`}
+                  className={`p-4 rounded-3xl border transition-all duration-300 flex flex-row items-stretch gap-4 ${borderTheme}`}
+                >
+                  {/* Columna Izquierda: Filas de búsqueda apiladas */}
+                  <div className="flex-grow flex flex-col gap-3 justify-center">
+                    {grupo.indices.map(idx => (
+                      <FilaBusqueda
+                        key={idx}
+                        index={idx}
+                        value={listaSeries[idx]}
+                        onChange={handleInputChange}
+                        onOpenDetails={abrirDetalles}
+                        onDelete={eliminarProducto}
+                        productoAnalizado={productosAnalizados[idx]}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Columna Derecha: Etiqueta del kit combinada y centrada verticalmente */}
+                  <div className="flex-none w-56 flex items-center justify-center border-l border-border-main pl-4">
+                    <div 
+                      onClick={() => abrirDetallesKit(grupo.kitInfo.kitAsociado)}
+                      className={`w-full py-4 px-3 rounded-2xl border flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-300 select-none ${
+                        grupo.kitInfo.matchCompleto 
+                          ? 'bg-primary text-white border-primary shadow-lg shadow-primary/25 hover:bg-primary/90' 
+                          : 'bg-primary/5 border-primary/20 text-primary opacity-50 hover:opacity-100 hover:bg-primary/10'
+                      }`}
+                    >
+                      <svg className="w-5 h-5 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                      <span className="text-[8px] uppercase tracking-[0.2em] font-bold opacity-85 text-center">
+                        {grupo.kitInfo.matchCompleto ? 'Kit Complete' : 'Matching Kit'}
+                      </span>
+                      <span className="text-[14px] font-fjalla uppercase tracking-wider text-center font-bold break-all leading-none">
+                        {grupo.kitInfo.kitAsociado.model_id}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            } else {
+              // Fila suelta
+              return (
+                <div 
+                  key={`suelto-group-${grupo.index}`}
+                  className="p-4 rounded-3xl border border-transparent flex flex-row items-stretch gap-4"
+                >
+                  <div className="flex-grow flex flex-col gap-3 justify-center">
+                    <FilaBusqueda
+                      key={grupo.index}
+                      index={grupo.index}
+                      value={listaSeries[grupo.index]}
+                      onChange={handleInputChange}
+                      onOpenDetails={abrirDetalles}
+                      onDelete={eliminarProducto}
+                      productoAnalizado={productosAnalizados[grupo.index]}
+                    />
+                  </div>
+                  {/* Columna derecha vacía del mismo ancho exacto para mantener la cuadrícula alineada */}
+                  <div className="flex-none w-56 border-l border-transparent pl-4"></div>
+                </div>
+              );
+            }
+          })}
         </div>
       </div>
 
@@ -165,6 +251,13 @@ const Buscador = () => {
         isOpen={modalOpen} 
         onClose={() => setModalOpen(false)} 
         resultadoCompleto={itemSeleccionado} 
+      />
+
+      <ModalDetallesKit
+        isOpen={modalKitOpen}
+        onClose={() => setModalKitOpen(false)}
+        kit={kitSeleccionado}
+        productosAnalizados={productosAnalizados}
       />
 
       {/* Modal de Confirmación de Reset */}
