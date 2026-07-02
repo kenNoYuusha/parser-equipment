@@ -308,18 +308,18 @@ const Buscador = () => {
                   {/* Columna Derecha: Etiqueta del kit combinada que se expande hacia la izquierda */}
                   <div className="flex-grow flex items-center justify-center border-l border-border-main pl-2">
                     {grupo.kitInfo.matchCompleto ? (
-                      /* Kit completo: tarjeta única al 100% clickeable completa */
+                      /* Kit completo: tarjeta única al 100% clickeable completa con diseño original translúcido */
                       <div 
                         onClick={() => abrirDetallesKit(grupo.kitInfo.kitAsociado)}
-                        className="w-full py-4 px-3 rounded-2xl border bg-primary text-white border-primary shadow-lg shadow-primary/25 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-300 select-none hover:bg-primary/95 active:scale-98 animate-in fade-in"
+                        className="w-full py-4 px-3 rounded-2xl border-2 border-primary/30 bg-primary/10 shadow-lg shadow-primary/5 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-300 select-none hover:bg-primary/15 active:scale-98 animate-in fade-in"
                       >
-                        <svg className="w-5 h-5 flex-none text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 flex-none text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
-                        <span className="text-[8px] uppercase tracking-[0.2em] font-bold opacity-85 text-center">
-                          Kit Complete
+                        <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-text-main opacity-80 text-center">
+                          Model:
                         </span>
-                        <span className="text-[14px] font-fjalla uppercase tracking-wider text-center font-bold break-all leading-normal mt-1">
+                        <span className="text-[14px] font-fjalla uppercase tracking-wider text-center font-bold text-primary break-all leading-normal">
                           {grupo.kitInfo.kitAsociado.model_id}
                         </span>
                       </div>
