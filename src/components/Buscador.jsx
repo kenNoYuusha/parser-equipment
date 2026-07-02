@@ -199,24 +199,58 @@ const Buscador = () => {
 
                   {/* Columna Derecha: Etiqueta del kit combinada y centrada verticalmente */}
                   <div className="flex-none w-56 flex items-center justify-center border-l border-border-main pl-4">
-                    <div 
-                      onClick={() => abrirDetallesKit(grupo.kitInfo.kitAsociado)}
-                      className={`w-full py-4 px-3 rounded-2xl border flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-300 select-none ${
-                        grupo.kitInfo.matchCompleto 
-                          ? 'bg-primary text-white border-primary shadow-lg shadow-primary/25 hover:bg-primary/90' 
-                          : 'bg-primary/5 border-primary/20 text-primary opacity-50 hover:opacity-100 hover:bg-primary/10'
-                      }`}
-                    >
-                      <svg className="w-5 h-5 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                      </svg>
-                      <span className="text-[8px] uppercase tracking-[0.2em] font-bold opacity-85 text-center">
-                        {grupo.kitInfo.matchCompleto ? 'Kit Complete' : 'Matching Kit'}
-                      </span>
-                      <span className="text-[14px] font-fjalla uppercase tracking-wider text-center font-bold break-all leading-none">
-                        {grupo.kitInfo.kitAsociado.model_id}
-                      </span>
-                    </div>
+                    {grupo.kitInfo.matchCompleto ? (
+                      /* Kit completo: tarjeta única al 100% */
+                      <div 
+                        className="w-full py-4 px-3 rounded-2xl border bg-primary text-white border-primary shadow-lg shadow-primary/25 flex flex-col items-center justify-center gap-1.5 select-none animate-in fade-in"
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-[8px] uppercase tracking-[0.2em] font-bold opacity-85">
+                            Kit Complete
+                          </span>
+                          <svg 
+                            onClick={() => abrirDetallesKit(grupo.kitInfo.kitAsociado)}
+                            className="w-5 h-5 cursor-pointer hover:scale-115 transition-transform flex-none text-white" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                          </svg>
+                        </div>
+                        <span className="text-[14px] font-fjalla uppercase tracking-wider text-center font-bold break-all leading-none mt-1">
+                          {grupo.kitInfo.kitAsociado.model_id}
+                        </span>
+                      </div>
+                    ) : (
+                      /* Kit incompleto: lista de candidatos viables al 50% */
+                      <div className="w-full flex flex-col gap-2 max-h-[180px] overflow-y-auto pr-1">
+                        {grupo.kitInfo.candidatos.slice(0, 4).map((cand) => (
+                          <div 
+                            key={cand.model_id}
+                            className="w-full py-2.5 px-3 rounded-xl border bg-primary/5 border-primary/20 text-primary opacity-50 hover:opacity-90 transition-all flex items-center justify-between gap-2"
+                          >
+                            <span className="text-[11px] font-fjalla uppercase tracking-wider font-bold truncate leading-none">
+                              {cand.model_id}
+                            </span>
+                            <svg 
+                              onClick={() => abrirDetallesKit(cand)}
+                              className="w-4 h-4 cursor-pointer flex-none hover:scale-125 transition-transform text-primary" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                          </div>
+                        ))}
+                        {grupo.kitInfo.candidatos.length > 4 && (
+                          <div className="text-[8px] text-text-muted text-center uppercase tracking-widest font-bold pt-1">
+                            + {grupo.kitInfo.candidatos.length - 4} options
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

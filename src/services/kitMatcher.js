@@ -163,24 +163,6 @@ export const resolverAsignacionMultiKits = (productosAnalizados, kits) => {
     return {};
   }
 
-  // Each tool initializes an active kit group
-  const kitsActivos = herramientas.map(h => {
-    const candidatosIniciales = kits.filter(k => 
-      [k.tool1, k.tool2, k.tool3, k.tool4, k.tool5].some(t => normalize(t) === h.modeloNorm)
-    );
-
-    return {
-      herramienta: h,
-      correlativo: h.correlativo,
-      candidatos: candidatosIniciales,
-      componentesAsignados: [h], // tool is automatically assigned
-      kitElegido: candidatosIniciales[0] || null,
-      matchCompleto: false
-    };
-  });
-
-  const componentesRestantes = productosValidos.filter(p => p.rol === 'BATTERY' || p.rol === 'CHARGER');
-
   // Helper to check if a kit can accommodate the assigned components
   const esViableParaAsignados = (kitBD, asignados) => {
     const freqAsignados = {};
@@ -247,6 +229,44 @@ export const resolverAsignacionMultiKits = (productosAnalizados, kits) => {
     return true;
   };
 
+  // Group tools into active kits.
+  // Tools are merged into an existing active kit group if a candidate kit can accommodate them.
+  const kitsActivos = [];
+
+  for (const h of herramientas) {
+    let asignadoAExistente = false;
+
+    for (const ka of kitsActivos) {
+      const nuevosAsignados = [...ka.componentesAsignados, h];
+      const nuevosCandidatos = ka.candidatos.filter(k => esViableParaAsignados(k, nuevosAsignados));
+
+      if (nuevosCandidatos.length > 0) {
+        ka.componentesAsignados = nuevosAsignados;
+        ka.candidatos = nuevosCandidatos;
+        ka.kitElegido = nuevosCandidatos[0];
+        asignadoAExistente = true;
+        break;
+      }
+    }
+
+    if (!asignadoAExistente) {
+      const candidatosIniciales = kits.filter(k => 
+        [k.tool1, k.tool2, k.tool3, k.tool4, k.tool5].some(t => normalize(t) === h.modeloNorm)
+      );
+
+      kitsActivos.push({
+        herramienta: h,
+        correlativo: h.correlativo,
+        candidatos: candidatosIniciales,
+        componentesAsignados: [h],
+        kitElegido: candidatosIniciales[0] || null,
+        matchCompleto: false
+      });
+    }
+  }
+
+  const componentesRestantes = productosValidos.filter(p => p.rol === 'BATTERY' || p.rol === 'CHARGER');
+
   // --- PASS 1: Exact Correlative Match ---
   // Assign components that have the exact same correlative as the active kit's tool
   // and are needed by the active kit.
@@ -291,8 +311,12 @@ export const resolverAsignacionMultiKits = (productosAnalizados, kits) => {
 
   // 3. Mark completeness for each kit active group
   for (const ka of kitsActivos) {
-    if (ka.kitElegido) {
-      ka.matchCompleto = esMatchCompleto(ka.kitElegido, ka.componentesAsignados);
+    const kitCompletoExacto = ka.candidatos.find(k => esMatchCompleto(k, ka.componentesAsignados));
+    if (kitCompletoExacto) {
+      ka.kitElegido = kitCompletoExacto;
+      ka.matchCompleto = true;
+    } else {
+      ka.matchCompleto = false;
     }
   }
 
