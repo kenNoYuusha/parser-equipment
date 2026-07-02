@@ -139,6 +139,16 @@ const ModalDetallesKit = ({ isOpen, onClose, kit, productosAnalizados }) => {
               </div>
             </div>
           )}
+
+          {/* Product Description */}
+          {kit.product_description && (
+            <div className="mt-6 pt-4 border-t border-border-main">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-text-muted block mb-1.5 font-bold">Description</span>
+              <p className="text-text-main text-sm font-medium leading-relaxed bg-text-main/5 p-4 rounded-2xl border border-border-main">
+                {kit.product_description}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

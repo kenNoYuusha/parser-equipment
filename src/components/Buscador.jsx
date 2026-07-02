@@ -169,12 +169,12 @@ const Buscador = () => {
     }
     
     if (bloquesKits.length > 0) {
-      textoCopiar += bloquesKits.join('\n\n\n'); // Two empty lines between kits
+      textoCopiar += bloquesKits.join('\n\n'); // One empty line between kits
     }
     
     if (baretools.length > 0) {
       if (textoCopiar.length > 0) {
-        textoCopiar += '\n\n\n'; // Two empty lines separator
+        textoCopiar += '\n\n'; // One empty line separator
       }
       textoCopiar += "Baretools:\n";
       const lineasBare = baretools.map(idx => {
@@ -225,7 +225,28 @@ const Buscador = () => {
           </div>
           
           <div className="flex gap-2">
-            {/* Copy Button */}
+            <button
+              onClick={agregarFila}
+              disabled={listaSeries.length >= 30}
+              className="flex items-center space-x-2 px-4 py-2 bg-text-main text-surface rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all hover:opacity-90 disabled:opacity-20 shadow-md cursor-pointer"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              <span>Add</span>
+            </button>
+
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-surface border border-border-main text-text-muted rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-red-500/10 hover:text-red-500 transition-all cursor-pointer"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Reset</span>
+            </button>
+
+            {/* Copy Button (Positioned at the far right) */}
             <button
               onClick={copiarResultados}
               disabled={!productosAnalizados.some(p => p?.valido)}
@@ -253,27 +274,6 @@ const Buscador = () => {
                 </>
               )}
             </button>
-
-            <button
-              onClick={agregarFila}
-              disabled={listaSeries.length >= 30}
-              className="flex items-center space-x-2 px-4 py-2 bg-text-main text-surface rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all hover:opacity-90 disabled:opacity-20 shadow-md cursor-pointer"
-            >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span>Add</span>
-            </button>
-
-            <button
-              onClick={() => setShowResetConfirm(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-surface border border-border-main text-text-muted rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-red-500/10 hover:text-red-500 transition-all cursor-pointer"
-            >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <span>Reset</span>
-            </button>
           </div>
         </div>
 
@@ -290,8 +290,8 @@ const Buscador = () => {
                   key={`kit-group-${grupo.herramientaIndex}`}
                   className={`p-4 rounded-3xl border transition-all duration-300 flex flex-row items-stretch gap-2 ${borderTheme}`}
                 >
-                  {/* Columna Izquierda: Filas de búsqueda apiladas */}
-                  <div className="flex-grow flex flex-col gap-3 justify-center">
+                  {/* Columna Izquierda: Filas de búsqueda apiladas con ancho fijo compacto */}
+                  <div className="flex-none w-[468px] flex flex-col gap-3 justify-center">
                     {grupo.indices.map(idx => (
                       <FilaBusqueda
                         key={idx}
@@ -305,8 +305,8 @@ const Buscador = () => {
                     ))}
                   </div>
 
-                  {/* Columna Derecha: Etiqueta del kit combinada y centrada verticalmente */}
-                  <div className="flex-none w-64 flex items-center justify-center border-l border-border-main pl-2">
+                  {/* Columna Derecha: Etiqueta del kit combinada que se expande hacia la izquierda */}
+                  <div className="flex-grow flex items-center justify-center border-l border-border-main pl-2">
                     {grupo.kitInfo.matchCompleto ? (
                       /* Kit completo: tarjeta única al 100% clickeable completa */
                       <div 
@@ -362,7 +362,7 @@ const Buscador = () => {
                   key={`suelto-group-${grupo.index}`}
                   className="p-4 rounded-3xl border border-transparent flex flex-row items-stretch gap-2"
                 >
-                  <div className="flex-grow flex flex-col gap-3 justify-center">
+                  <div className="flex-none w-[468px] flex flex-col gap-3 justify-center">
                     <FilaBusqueda
                       key={grupo.index}
                       index={grupo.index}
@@ -373,8 +373,8 @@ const Buscador = () => {
                       productoAnalizado={productosAnalizados[grupo.index]}
                     />
                   </div>
-                  {/* Columna derecha vacía del mismo ancho exacto para mantener la cuadrícula alineada */}
-                  <div className="flex-none w-64 border-l border-transparent pl-2"></div>
+                  {/* Columna derecha vacía que se expande para mantener la cuadrícula perfectamente alineada */}
+                  <div className="flex-grow border-l border-transparent pl-2"></div>
                 </div>
               );
             }
