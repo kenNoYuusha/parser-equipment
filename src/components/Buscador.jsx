@@ -124,30 +124,30 @@ const Buscador = () => {
   const copiarResultados = () => {
     const asignaciones = resolverAsignacionMultiKits(productosAnalizados, kits);
     
-    // 1. Group components by tool index
-    const kitsAgrupados = {};
-    const indicesKitsProcesados = new Set();
+    // 1. Group components by tool index — only kits with a COMPLETE match get a "Kit:" header
+    const kitsCompletos = {};
+    const indicesKitsCompletoProcesados = new Set();
     
     for (let i = 0; i < listaSeries.length; i++) {
       const asig = asignaciones[i];
-      if (asig && asig.herramientaIndex !== undefined) {
+      if (asig && asig.herramientaIndex !== undefined && asig.matchCompleto) {
         const hIdx = asig.herramientaIndex;
-        if (!kitsAgrupados[hIdx]) {
-          kitsAgrupados[hIdx] = {
+        if (!kitsCompletos[hIdx]) {
+          kitsCompletos[hIdx] = {
             kitAsociado: asig.kitAsociado,
             componentes: []
           };
         }
-        kitsAgrupados[hIdx].componentes.push(i);
-        indicesKitsProcesados.add(i);
+        kitsCompletos[hIdx].componentes.push(i);
+        indicesKitsCompletoProcesados.add(i);
       }
     }
     
-    // 2. Group baretools (validated but not assigned to any kit)
-    const baretools = [];
+    // 2. Everything else that is valid (baretools + incomplete kit members) goes as plain lines
+    const lineasSueltas = [];
     for (let i = 0; i < listaSeries.length; i++) {
-      if (productosAnalizados[i]?.valido && !indicesKitsProcesados.has(i)) {
-        baretools.push(i);
+      if (productosAnalizados[i]?.valido && !indicesKitsCompletoProcesados.has(i)) {
+        lineasSueltas.push(i);
       }
     }
     
@@ -155,32 +155,31 @@ const Buscador = () => {
     let textoCopiar = "";
     const bloquesKits = [];
     
-    for (const [hIdx, data] of Object.entries(kitsAgrupados)) {
+    for (const [, data] of Object.entries(kitsCompletos)) {
       data.componentes.sort((a, b) => a - b);
       
       let bloque = `Kit: ${data.kitAsociado.model_id}\n`;
       const lineasComp = data.componentes.map(idx => {
         const serial = listaSeries[idx] || "";
         const modelo = productosAnalizados[idx]?.model_na || "";
-        return `${serial.padEnd(25, ' ')}${modelo}`;
+        return `${serial} ${modelo}`;
       });
       bloque += lineasComp.join('\n');
       bloquesKits.push(bloque);
     }
     
     if (bloquesKits.length > 0) {
-      textoCopiar += bloquesKits.join('\n\n'); // One empty line between kits
+      textoCopiar += bloquesKits.join('\n\n');
     }
     
-    if (baretools.length > 0) {
+    if (lineasSueltas.length > 0) {
       if (textoCopiar.length > 0) {
-        textoCopiar += '\n\n'; // One empty line separator
+        textoCopiar += '\n\n';
       }
-      textoCopiar += "Baretools:\n";
-      const lineasBare = baretools.map(idx => {
+      const lineasBare = lineasSueltas.map(idx => {
         const serial = listaSeries[idx] || "";
         const modelo = productosAnalizados[idx]?.model_na || "";
-        return `${serial.padEnd(25, ' ')}${modelo}`;
+        return `${serial} ${modelo}`;
       });
       textoCopiar += lineasBare.join('\n');
     }
@@ -207,23 +206,26 @@ const Buscador = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
-      <header className="text-center mb-10 animate-in fade-in duration-700">
-        <div className="inline-block px-4 py-1.5 bg-primary/15 text-primary text-[10px] font-bold rounded-full mb-4 uppercase tracking-[0.2em] border border-primary/20 transition-colors">
-          Batch Processing System
-        </div>
-        <h1 className="text-3xl md:text-4xl text-text-main mb-4 uppercase tracking-widest font-fjalla transition-colors">
-          Serial Verification
-        </h1>
-      </header>
+    <>
+      <div className="max-w-4xl mx-auto px-4">
+        <header className="text-center mb-10 animate-in fade-in duration-700">
+          <div className="inline-block px-4 py-1.5 bg-primary/15 text-primary text-[10px] font-bold rounded-full mb-4 uppercase tracking-[0.2em] border border-primary/20 transition-colors">
+            Batch Processing System
+          </div>
+          <h1 className="text-3xl md:text-4xl text-text-main mb-4 uppercase tracking-widest font-fjalla transition-colors">
+            Serial Verification
+          </h1>
+        </header>
+      </div>
 
-      <div className="bg-surface/50 p-6 md:p-8 rounded-[2.5rem] border border-border-main shadow-inner mb-8 transition-colors duration-300">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 pb-6 border-b border-border-main">
+      {/* ── Controls Bar ── sticky below the Navbar, full-width so sticky works correctly */}
+      <div className="sticky top-16 z-40 bg-bg-app/80 backdrop-blur-md border-b border-border-main mb-6 transition-colors duration-300">
+        <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-3 py-3">
           <div className="text-left">
             <h3 className="text-sm text-text-main/60 font-bold uppercase tracking-wider">Input Serials</h3>
             <p className="text-[10px] text-text-muted uppercase tracking-widest">Max 30 units per batch</p>
           </div>
-          
+
           <div className="flex gap-2">
             <button
               onClick={agregarFila}
@@ -246,28 +248,28 @@ const Buscador = () => {
               <span>Reset</span>
             </button>
 
-            {/* Copy Button (Positioned at the far right) */}
+            {/* Copy Button — fixed width to prevent layout shift on text change */}
             <button
               onClick={copiarResultados}
               disabled={!productosAnalizados.some(p => p?.valido)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all shadow-md ${
+              className={`flex items-center justify-center gap-2 w-[90px] py-2 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all shadow-md ${
                 productosAnalizados.some(p => p?.valido)
                   ? mostrarCopiadoToast
-                    ? 'bg-green-500 text-white hover:opacity-90'
+                    ? 'bg-primary text-white hover:opacity-90'
                     : 'bg-surface border border-border-main text-text-main hover:bg-text-main/5 cursor-pointer'
                   : 'bg-surface border border-border-main text-text-muted opacity-30 cursor-not-allowed shadow-none'
               }`}
             >
               {mostrarCopiadoToast ? (
                 <>
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
                   <span>Copied!</span>
                 </>
               ) : (
                 <>
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                   </svg>
                   <span>Copy</span>
@@ -276,10 +278,14 @@ const Buscador = () => {
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Contenedor de Filas con tamaño mínimo para asegurar la alineación de columnas */}
-        <div className="space-y-3 min-w-[760px]">
-          {gruposRenderizado.map((grupo, gIdx) => {
+      {/* ── Scrollable Card with all rows ── */}
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="bg-surface/50 p-6 md:p-8 rounded-[2.5rem] border border-border-main shadow-inner mb-8 transition-colors duration-300">
+          {/* Contenedor de Filas con tamaño mínimo para asegurar la alineación de columnas */}
+          <div className="space-y-3 min-w-[760px]">
+            {gruposRenderizado.map((grupo, gIdx) => {
             if (grupo.tipo === 'kit') {
               const borderTheme = grupo.kitInfo.matchCompleto 
                 ? 'border-primary/40 shadow-lg shadow-primary/5 bg-primary/[0.02]' 
@@ -305,10 +311,10 @@ const Buscador = () => {
                     ))}
                   </div>
 
-                  {/* Columna Derecha: Etiqueta del kit combinada que se expande hacia la izquierda */}
+                  {/* Columna Derecha: Etiqueta del kit o lista de candidatos */}
                   <div className="flex-grow flex items-center justify-center border-l border-border-main pl-2">
                     {grupo.kitInfo.matchCompleto ? (
-                      /* Kit completo: tarjeta única al 100% clickeable completa con diseño original translúcido */
+                      /* Kit completo: tarjeta única clickeable */
                       <div 
                         onClick={() => abrirDetallesKit(grupo.kitInfo.kitAsociado)}
                         className="w-full py-4 px-3 rounded-2xl border-2 border-primary/30 bg-primary/10 shadow-lg shadow-primary/5 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-300 select-none hover:bg-primary/15 active:scale-98 animate-in fade-in"
@@ -324,8 +330,8 @@ const Buscador = () => {
                         </span>
                       </div>
                     ) : (
-                      /* Kit incompleto: lista de candidatos viables al 50% clickeables completos */
-                      <div className="w-full flex flex-col gap-2 max-h-[180px] overflow-y-auto pr-1">
+                      /* Kit incompleto: lista de candidatos sin scroll */
+                      <div className="w-full flex flex-col gap-2">
                         {grupo.kitInfo.candidatos.slice(0, 4).map((cand) => (
                           <div 
                             key={cand.model_id}
@@ -379,6 +385,7 @@ const Buscador = () => {
               );
             }
           })}
+          </div>
         </div>
       </div>
 
@@ -409,7 +416,7 @@ const Buscador = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
