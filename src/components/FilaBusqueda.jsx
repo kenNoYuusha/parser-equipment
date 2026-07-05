@@ -55,14 +55,14 @@ const FilaBusqueda = ({
     <div className="flex flex-row items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
 
       {/* Columna 1: Número e Input de Serial */}
-      <div className="flex-none flex items-center gap-2 w-72">
+      <div className="flex items-center gap-2 min-w-64">
         {/* Indicador de Fila */}
-        <div className="flex-none w-8 h-8 flex items-center justify-center bg-bg-number text-primary font-fjalla rounded-lg border border-primary/20 shadow-sm text-xs transition-colors duration-300">
+        <div className="w-8 h-8 flex items-center justify-center bg-bg-number text-primary font-fjalla rounded-lg border border-primary/20 shadow-sm text-xs transition-colors duration-300">
           {index + 1}
         </div>
 
         {/* Input con Botón de Eliminar Integrado */}
-        <div className="relative flex-grow">
+        <div className="relative grow">
           <input
             type="text"
             value={localValue}
@@ -70,7 +70,7 @@ const FilaBusqueda = ({
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             placeholder="Serial..."
-            maxLength={30}
+            maxLength={20}
             className={`w-full pl-3 pr-8 py-2 bg-surface border-2 rounded-xl outline-none transition-all font-medium text-sm text-text-main ${
               localValue 
                 ? isValid 
@@ -94,7 +94,7 @@ const FilaBusqueda = ({
       </div>
 
       {/* Columna 2: Badge de Modelo (Al lado del input) */}
-      <div className="flex-none w-40 flex items-center">
+      <div className="w-36 flex items-center">
         {isValid && (
           <div 
             className={`w-full px-3 py-1.5 rounded-lg border flex justify-between items-center gap-2 overflow-hidden transition-colors duration-300 ${

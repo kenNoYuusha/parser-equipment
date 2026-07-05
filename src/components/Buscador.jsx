@@ -252,7 +252,7 @@ const Buscador = () => {
             <button
               onClick={copiarResultados}
               disabled={!productosAnalizados.some(p => p?.valido)}
-              className={`flex items-center justify-center gap-2 w-[90px] py-2 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all shadow-md ${
+              className={`flex items-center justify-center gap-2 w-22.5 py-2 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all shadow-md ${
                 productosAnalizados.some(p => p?.valido)
                   ? mostrarCopiadoToast
                     ? 'bg-primary text-white hover:opacity-90'
@@ -284,7 +284,7 @@ const Buscador = () => {
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-surface/50 p-6 md:p-8 rounded-[2.5rem] border border-border-main shadow-inner mb-8 transition-colors duration-300">
           {/* Contenedor de Filas con tamaño mínimo para asegurar la alineación de columnas */}
-          <div className="space-y-3 min-w-[760px]">
+          <div className="space-y-3">
             {gruposRenderizado.map((grupo, gIdx) => {
             if (grupo.tipo === 'kit') {
               const borderTheme = grupo.kitInfo.matchCompleto 
@@ -294,10 +294,10 @@ const Buscador = () => {
               return (
                 <div 
                   key={`kit-group-${grupo.herramientaIndex}`}
-                  className={`p-4 rounded-3xl border transition-all duration-300 flex flex-row items-stretch gap-2 ${borderTheme}`}
+                  className={`p-4 rounded-3xl border transition-all duration-300 flex flex-row items-stretch gap-4 ${borderTheme}`}
                 >
                   {/* Columna Izquierda: Filas de búsqueda apiladas con ancho fijo compacto */}
-                  <div className="flex-none w-[468px] flex flex-col gap-3 justify-center">
+                  <div className="flex flex-col gap-3 justify-center">
                     {grupo.indices.map(idx => (
                       <FilaBusqueda
                         key={idx}
@@ -312,7 +312,7 @@ const Buscador = () => {
                   </div>
 
                   {/* Columna Derecha: Etiqueta del kit o lista de candidatos */}
-                  <div className="flex-grow flex items-center justify-center border-l border-border-main pl-2">
+                  <div className="grow flex items-center justify-center border-l border-border-main pl-2">
                     {grupo.kitInfo.matchCompleto ? (
                       /* Kit completo: tarjeta única clickeable */
                       <div 
@@ -325,7 +325,7 @@ const Buscador = () => {
                         <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-text-main opacity-80 text-center">
                           Model:
                         </span>
-                        <span className="text-[14px] font-fjalla uppercase tracking-wider text-center font-bold text-primary break-all leading-normal">
+                        <span className="text-[16px] font-fjalla uppercase tracking-wider text-center font-bold text-primary break-all leading-normal">
                           {grupo.kitInfo.kitAsociado.model_id}
                         </span>
                       </div>
@@ -338,7 +338,7 @@ const Buscador = () => {
                             onClick={() => abrirDetallesKit(cand)}
                             className="w-full py-2.5 px-3 rounded-xl border bg-primary/5 border-primary/20 text-primary opacity-50 hover:opacity-100 hover:bg-primary/10 transition-all flex items-center justify-between gap-2 cursor-pointer select-none"
                           >
-                            <span className="text-[11px] font-fjalla uppercase tracking-wider font-bold truncate leading-normal py-0.5">
+                            <span className="text-[14px] font-fjalla uppercase tracking-wider font-bold truncate leading-normal py-0.5">
                               {cand.model_id}
                             </span>
                             <svg 
@@ -368,7 +368,7 @@ const Buscador = () => {
                   key={`suelto-group-${grupo.index}`}
                   className="p-4 rounded-3xl border border-transparent flex flex-row items-stretch gap-2"
                 >
-                  <div className="flex-none w-[468px] flex flex-col gap-3 justify-center">
+                  <div className="flex-none w-117 flex flex-col gap-3 justify-center">
                     <FilaBusqueda
                       key={grupo.index}
                       index={grupo.index}
@@ -380,7 +380,7 @@ const Buscador = () => {
                     />
                   </div>
                   {/* Columna derecha vacía que se expande para mantener la cuadrícula perfectamente alineada */}
-                  <div className="flex-grow border-l border-transparent pl-2"></div>
+                  <div className="grow border-l border-transparent pl-2"></div>
                 </div>
               );
             }
